@@ -1,0 +1,621 @@
+[
+    [
+      "Seller Loan ID",
+      "Investor Tape ID",
+      "Loan Number"
+    ],
+    [
+      "Number of Borrowers",
+      "Total Number of Borrowers",
+      "Total Number of Borrowers"
+    ],
+    [
+      "As Of Date",
+      "Cut-Off Date"
+    ],
+    [
+      "Origination Note Date",
+      "Origination Date",
+      "Origination Date"
+    ],
+    [
+      "Orig First Payment Date",
+      "First Payment Date of Loan",
+      "First Payment Date of Loan"
+    ],
+    [
+      "Orig Loan Amount",
+      "Original Principal Balance",
+      "Original Loan Amount"
+    ],
+    [
+      "Curr Loan Balance",
+      "Stated Principal Balance",
+      "Scheduled Loan Amount"
+    ],
+    [
+      "Curr Payment Paid Thru Date",
+      "Paid Through Date",
+      "Scheduled Interest Paid Through Date"
+    ],
+    [
+      "Curr Servicer Delinquency Status",
+      "Current Status",
+      "Current Payment Status"
+    ],
+    [
+      "Pay History Current for 24",
+      "Pay History"
+    ],
+    [
+      "Property City",
+      "City",
+      "City"
+    ],
+    [
+      "Property State",
+      "State",
+      "State"
+    ],
+    [
+      "Property Zip",
+      "Zip Code",
+      "Postal Code"
+    ],
+    [
+      "Seller Product Type",
+      "Product Type"
+    ],
+    [
+      "Orig Loan Interest Rate",
+      "Original Interest Rate (%)",
+      "Original Interest Rate"
+    ],
+    [
+      "Curr Loan Interest Rate",
+      "Current Interest Rate (%)",
+      "Current Interest Rate"
+    ],
+    [
+      "Orig Loan Term",
+      "Loan Term",
+      "Original Term to Maturity"
+    ],
+    [
+      "Orig Amortization Term",
+      "Amortization Term",
+      "Original Amortization Term"
+    ],
+    [
+      "Orig Interest Only Term",
+      "Interest Only Term",
+      "Original Interest Only Term"
+    ],
+    [
+      "Curr PI Payment",
+      "Current Monthly P&I"
+    ],
+    [
+      "Total Combined Monthly Income",
+      "All Borrower's Total Income",
+      "All Borrower Total Income"
+    ],
+    [
+      "Monthly Debt All Borrowers",
+      "Monthly Debt All Borrowers",
+      "Monthly Debt All Borrowers"
+    ],
+    [
+      "Orig Appraisal Value",
+      "Original Appraisal Value",
+      "Original Appraised Property Value"
+    ],
+    [
+      "Orig Appraisal Date",
+      "Original Appraisal Date",
+      "Original Property Valuation Date"
+    ],
+    [
+      "Orig Sales Price",
+      "Purchase Price",
+      "Sales Price"
+    ],
+    [
+      "Orig LTV",
+      "Original LTV (%)",
+      "Original LTV"
+    ],
+    [
+      "Orig CLTV",
+      "Original Combined LTV (%)",
+      "Original CLTV"
+    ],
+    [
+      "Lien Position",
+      "Lien Position",
+      "Lien Position"
+    ],
+    [
+      "Original FICO",
+      "Original Credit Score",
+      "Supplemental Field: Original FICO"
+    ],
+    [
+      "Borr 1 Credit Score",
+      "Original Credit Score Date",
+      "Most Recent Primary Borrower FICO"
+    ],
+    [
+      "Current FICO",
+      "Most Recent Credit Score",
+      "Supplemental Field: Current FICO"
+    ],
+    [
+      "Current FICO Date",
+      "Most Recent Credit Score Date"
+    ],
+    [
+      "Loan Purpose",
+      "Loan Purpose",
+      "Loan Purpose"
+    ],
+    [
+      "Cash Out Amount",
+      "Cash-Out Amount",
+      "Cash Out Amount"
+    ],
+    [
+      "Property Type",
+      "Property Type",
+      "Property Type"
+    ],
+    [
+      "Curr Occupancy Status",
+      "Occupancy",
+      "Occupancy"
+    ],
+    [
+      "Rate Type",
+      "Rate Type",
+      "Interest Type Indicator"
+    ],
+    [
+      "ARM Initial Rate Adj Cap",
+      "ARM First Rate Adjustment Cap (%)",
+      "Initial Interest Rate Cap (Change Up)"
+    ],
+    [
+      "Arm Initial Fixed Rate Period",
+      "ARM Original Fixed Period",
+      "Initial Fixed Rate Period"
+    ],
+    [
+      "ARM Periodic Cap",
+      "ARM Subsequent Rate Adjustment Cap (%)",
+      "Subsequent Interest Rate Cap (Change Up)"
+    ],
+    [
+      "ARM Rate Adj Frequency",
+      "ARM Rate Adjustment Frequency",
+      "Subsequent Interest Rate Reset Period"
+    ],
+    [
+      "ARM Max Rate",
+      "ARM Ceiling Rate (%)",
+      "Lifetime Maximum Rate (Ceiling)"
+    ],
+    [
+      "ARM Min Rate",
+      "ARM Floor Rate (%)",
+      "Lifetime Minimum Rate (Floor)"
+    ],
+    [
+      "Arm Margin",
+      "ARM Margin (%)",
+      "Gross Margin"
+    ],
+    [
+      "Arm Index",
+      "ARM Index",
+      "Index Type"
+    ],
+    [
+      "ARM Lookback Days",
+      "ARM Look Back Days",
+      "ARM Look-back Days"
+    ],
+    [
+      "ARM Round Flag",
+      "ARM Round Flag",
+      "ARM Round Flag"
+    ],
+    [
+      "ARM Round Factor",
+      "ARM Rounding Factor (%)",
+      "ARM Round Factor"
+    ],
+    [
+      "Prepayment Penalty Description",
+      "Prepayment Charge Type",
+      "Prepayment Penalty Type"
+    ],
+    [
+      "Prepayment Penalty Period",
+      "Prepayment Penalty Total Term",
+      "Prepayment Penalty Total Term"
+    ],
+    [
+      "Remaining Prepayment Penalty Period",
+      "Remaining Prepayment Penalty Term"
+    ],
+    [
+      "Doc Type",
+      "Primary Income Documentation Type",
+      "Supplemental Field: Documentation Type"
+    ],
+    [
+      "Originator Program",
+      "Bank Statement Program"
+    ],
+    [
+      "DTI Ratio",
+      "DTI (%)",
+      "Originator DTI"
+    ],
+    [
+      "CRE Financials: UW DSCR (NOI)",
+      "Debt Service Coverage Ratio"
+    ],
+    [
+      "Liquid / Cash Reserves",
+      "Liquid Reserve",
+      "Liquid / Cash Reserves"
+    ],
+    [
+      "Months Since BK Discharge",
+      "Months Since Bankruptcy",
+      "Months Bankruptcy"
+    ],
+    [
+      "Months Since FC Sale",
+      "Months Since Foreclosure",
+      "Months Foreclosure"
+    ],
+    [
+      "Self-Employment Flag",
+      "Self-Employed Flag",
+      "Self-employment Flag"
+    ],
+    [
+      "Borr 1 Residency Status",
+      "Borrower Residency Status"
+    ],
+    [
+      "Borr 2 Residency Status",
+      "Co-Borrower Residency Status"
+    ],
+    [
+      "QM Status",
+      "ATR Loan Type",
+      "Supplemental Field: TILA Status"
+    ],
+    [
+      "Originator Name",
+      "Originator",
+      "Originator"
+    ],
+    [
+      "Servicer Name",
+      "Servicer",
+      "Primary Servicer"
+    ],
+    [
+      "Number Of Properties",
+      "Number of Mortgaged Properties",
+      "Number of Mortgaged Properties"
+    ],
+    [
+      "Originator Loan Grade",
+      "Final Loan Grade"
+    ],
+    [
+      "DD: Credit Event Grade",
+      "Final Credit Grade"
+    ],
+    [
+      "DD: Compliance Event Grade",
+      "Final Compliance Grade"
+    ],
+    [
+      "DD: Property Event Grade",
+      "Final Valuation Grade"
+    ],
+    [
+      "First-time Home Buyer",
+      "First Time Homebuyer Flag"
+    ],
+    [
+      "Mod Deferred Amount",
+      "Total Deferred Amount",
+      "Total Deferred Amount"
+    ],
+    [
+      "Orig Junior Loan Amount",
+      "Junior Mortgage Balance",
+      "Junior Mortgage Balance"
+    ],
+    [
+      "Senior Lien Original Balance",
+      "Senior Mortgage Balance",
+      "Senior Loan Amount(s)"
+    ],
+    [
+      "Qualification Method",
+      "Qualification Method",
+      "Qualification Method"
+    ],
+    [
+      "Forbearance Type",
+      "Forbearance Inquiry Flag"
+    ],
+    [
+      "Short Term Rental Flag",
+      "Short Term Rental Flag"
+    ],
+    [
+      "Svc Fee Rate (%)",
+      "Servicing Fee-Percentage"
+    ],
+    [
+      "Svc Fee Amt ($)",
+      "Servicing Fee-Flat Dollar"
+    ],
+    [
+      "Svc Advance Method",
+      "Servicing Advance Methodology"
+    ],
+    [
+      "Orig Amortization Type",
+      "Amortization Type"
+    ],
+    [
+      "Line of Credit Flag",
+      "Heloc Indicator"
+    ],
+    [
+      "Origination Discount Points ($)",
+      "Total Origination and Discount Points (in dollars)"
+    ],
+    [
+      "High Cost Flag",
+      "Covered/High Cost Loan Indicator"
+    ],
+    [
+      "Relocation Flag",
+      "Relocation Loan Indicator"
+    ],
+    [
+      "Broker Flag",
+      "Broker Indicator"
+    ],
+    [
+      "Orig Channel",
+      "Channel"
+    ],
+    [
+      "Escrow Flag",
+      "Escrow Indicator"
+    ],
+    [
+      "Senior Lien Loan Type",
+      "Loan Type of Most Senior Lien"
+    ],
+    [
+      "Senior Lien Hybrid Period",
+      "Hybrid Period of Most Senior Lien (in months)"
+    ],
+    [
+      "Senior Lien Neg Am Limit",
+      "Neg Am Limit of Most Senior Lien"
+    ],
+    [
+      "Buydown Period",
+      "Buy Down Period"
+    ],
+    [
+      "LOC Draw Period",
+      "HELOC Draw Period"
+    ],
+    [
+      "Current Payment Amount Due",
+      "Current Payment Amount Due"
+    ],
+    [
+      "Negam Limit",
+      "Negative Amortization Limit"
+    ],
+    [
+      "Init NegAm Recast Period",
+      "Initial Negative Amortization Recast Period"
+    ],
+    [
+      "Subseq NegAm Recast Period",
+      "Subsequent Negative Amortization Recast Period"
+    ],
+    [
+      "Init Fixed Payment Period",
+      "Initial Fixed Payment Period"
+    ],
+    [
+      "Subseq Payment Reset Period",
+      "Subsequent Payment Reset Period"
+    ],
+    [
+      "Init Periodic Pay Cap",
+      "Initial Periodic Payment Cap"
+    ],
+    [
+      "Subseq Periodic Pay Cap",
+      "Subsequent Periodic Payment Cap"
+    ],
+    [
+      "Init Min Payment",
+      "Initial Minimum Payment Reset Period"
+    ],
+    [
+      "OptionARM Flag",
+      "Option ARM Indicator"
+    ],
+    [
+      "Prepayment Penalty Hard Term",
+      "Prepayment Penalty Hard Term"
+    ],
+    [
+      "Current Other Payment",
+      "Current 'Other' Monthly Payment"
+    ],
+    [
+      "Borr 1 Length of Employment",
+      "Length of Employment: Borrower"
+    ],
+    [
+      "Borr 2 Length of Employment",
+      "Length of Employment: Co-Borrower"
+    ],
+    [
+      "Years in Home",
+      "Years in Home"
+    ],
+    [
+      "Borr 1 Credit Score Date",
+      "Most Recent FICO Date"
+    ],
+    [
+      "Borr 2 Credit Score",
+      "Most Recent Co-Borrower FICO"
+    ],
+    [
+      "Credit: Longest Trade Line",
+      "Credit Report: Longest Trade Line"
+    ],
+    [
+      "Credit: Maximum Trade Line",
+      "Credit Report: Maximum Trade Line"
+    ],
+    [
+      "Credit: Number of Trade Lines",
+      "Credit Report: Number of Trade Lines"
+    ],
+    [
+      "Credit Line Usage Ratio",
+      "Credit Line Usage Ratio"
+    ],
+    [
+      "Pay History 24 Mths",
+      "Most Recent 24-month Pay History"
+    ],
+    [
+      "Borr 1 Wage Income",
+      "Primary Borrower Wage Income"
+    ],
+    [
+      "Borr 2 Wage Income",
+      "Co-Borrower Wage Income"
+    ],
+    [
+      "Borr 1 Other Income",
+      "Primary Borrower Other Income"
+    ],
+    [
+      "Borr 2 Other Income",
+      "Co-Borrower Other Income"
+    ],
+    [
+      "Total Combined Wage Income",
+      "All Borrower Wage Income"
+    ],
+    [
+      "4506T Flag",
+      "4506-T Indicator"
+    ],
+    [
+      "Borr 1 Income Verification",
+      "Borrower Income Verification Level"
+    ],
+    [
+      "Borr 2 Income Verification",
+      "Co-Borrower Income Verification"
+    ],
+    [
+      "Borr 1 Employment Verification",
+      "Borrower Employment Verification"
+    ],
+    [
+      "Borr 2 Employment Verification",
+      "Co-Borrower Employment Verification"
+    ],
+    [
+      "Borr 1 Asset Verification",
+      "Borrower Asset Verification"
+    ],
+    [
+      "Borr 2 Asset Verification",
+      "Co-Borrower Asset Verification"
+    ],
+    [
+      "Orig Pledged Assets",
+      "Original Pledged Assets"
+    ],
+    [
+      "MI Company",
+      "Mortgage Insurance Company Name"
+    ],
+    [
+      "MI Coverage Pct",
+      "Mortgage Insurance Percent"
+    ],
+    [
+      "MI Cert Num",
+      "MI Certificate Number"
+    ],
+    [
+      "Mod Capitalized Amount",
+      "Total Capitalized Amount"
+    ],
+    [
+      "Modification Flag",
+      "Pre-Modification Interest (Note) Rate"
+    ],
+    [
+      "Seller",
+      "Supplemental Field: Seller"
+    ],
+    [
+      "Orig Loan Maturity Date",
+      "Maturity Date"
+    ],
+    [
+      "BPO Value",
+      "Most Recent Property Value"
+    ],
+    [
+      "BPO Date",
+      "Most Recent Property Valuation Date"
+    ],
+    [
+      "Financing: Advance Rate",
+      "Supplemental Field: Existing Corporate Advance"
+    ],
+    [
+      "Escrow Advance Balance",
+      "Supplemental Field: Existing Escrow Advance"
+    ],
+    [
+      "Curr LTV",
+      "Supplemental Field: Current LTV"
+    ],
+    [
+      "Curr CLTV",
+      "Supplemental Field: Current CLTV"
+    ]
+  ]

@@ -1,0 +1,46 @@
+[
+  {
+    "name": "transaction_id",
+    "type": "string"
+  },
+  {
+    "name": "source_system",
+    "type": "string"
+  },
+  {
+    "name": "employee_number",
+    "type": "string"
+  },
+  {
+    "name": "product_id",
+    "type": "string"
+  },
+  {
+    "name": "amount_usd",
+    "type": "double"
+  },
+  {
+    "name": "amount_original",
+    "type": "double"
+  },
+  {
+    "name": "currency_original",
+    "type": "string"
+  },
+  {
+    "name": "transaction_date",
+    "type": "date"
+  },
+  {
+    "name": "region",
+    "type": "string"
+  },
+  {
+    "name": "account_name",
+    "type": "string"
+  },
+  {
+    "name": "loaded_at",
+    "type": "timestamp"
+  }
+]
