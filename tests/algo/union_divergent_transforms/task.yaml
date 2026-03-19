@@ -1,0 +1,53 @@
+description: >
+  The past pipeline ingested transaction data from two separate channels —
+  POS register sales and online order sales — each with a different schema
+  requiring different transformations before they could be unioned into a
+  single transaction stream. POS data stored dates in MM/DD/YYYY format and
+  amounts in cents; online data stored ISO timestamps and split the amount
+  into subtotal + tax. After per-source reformats the streams were unioned
+  and a final reformat produced the target schema.
+
+  The current source is a single pre-unified "transactions" table whose
+  schema is very close to the target but not identical: the date column is
+  a YYYY-MM-DD string (needs CAST to DATE), the amount column is named
+  amount_usd (needs rename), and the email column is cust_email (needs
+  rename). The algorithm should match the past pipeline's semantics and
+  produce a query with these minor adaptations.
+
+  All data represents the same five transactions:
+    Alice Johnson  — POS,    Jan 15 2024, $149.99
+    Bob Smith      — online, Jan 20 2024, $89.50  (82.00 + 7.50 tax)
+    Carol Davis    — POS,    Feb 10 2024, $34.00
+    Dan Wilson     — online, Feb 28 2024, $215.00 (200.00 + 15.00 tax)
+    Eve Martin     — POS,    Mar  5 2024, $62.50
+  In the past pipeline these are split across pos_sales (3 rows) and
+  online_sales (2 rows). In the current source all 5 appear in one table.
+
+sources:
+  - name: transactions
+    file: sourcedata/transactions.csv
+    schema:
+      - name: txn_id
+        type: STRING
+      - name: txn_date
+        type: STRING
+      - name: amount_usd
+        type: DECIMAL
+      - name: cust_email
+        type: STRING
+
+target:
+  table: unified_transaction
+  columns:
+    - name: txn_id
+      type: STRING
+      description: Unique transaction identifier
+    - name: txn_date
+      type: DATE
+      description: Date the transaction occurred
+    - name: amount
+      type: DECIMAL
+      description: Transaction amount in dollars
+    - name: customer_email
+      type: STRING
+      description: Customer email address

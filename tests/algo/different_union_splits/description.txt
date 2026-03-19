@@ -1,0 +1,28 @@
+The past pipeline has transactions split into two tables pos_txn and online_txn.
+
+The query to get the final Table is something like:
+
+
+with normalized_pos_txn as (
+ select txn_id, fee_usd as amount * 0.1
+ from pos_txns
+), normalized_online_txn as (
+ select txn_id, fee_usd as amount * 0.2
+ from pos_txns
+),
+all_txn as (
+    select * from normalized_pos_txn
+    union all 
+    select * from normalized_online_txn
+),
+
+fx_conversion as (
+    select txn_id,
+    fee_usd * 100 as fee 
+)
+
+select * from fx_conversion
+
+
+and the current sources have transactions split into india_txn and us_txn where the fee calculation logic
+is based on another column called txn_type.

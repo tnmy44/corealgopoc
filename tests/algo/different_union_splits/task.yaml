@@ -1,0 +1,56 @@
+description: >
+  Query Adaptation is hard here because the fee-rate logic changed from
+  being encoded in the table structure to being encoded in a column value.
+
+  The past pipeline split transactions by channel: pos_txns and
+  online_txns. Both tables carried a txn_type column ('pos'/'online'), but
+  the SQL ignored it — it hardcoded fee_usd = amount * 0.1 for pos_txns
+  and amount * 0.2 for online_txns, relying on the table split to imply
+  the rate. After UNION ALL a common FX conversion (fee_usd * 100)
+  produced the final fee.
+
+  The current sources split the same data by geography: india_txns and
+  us_txns, each containing a mix of POS and online rows. The txn_type
+  column is now the only way to determine the fee rate. Adaptation must
+  recognise that the past per-table hardcoded rates correspond to
+  txn_type values and rewrite them as a CASE expression — something no
+  column-level mapping can express, since the past SQL never referenced
+  txn_type at all.
+
+  All data represents the same five transactions (different IDs, same
+  amounts and types):
+    $500  POS    — past: POS-001 in pos_txns,    current: IND-001 in india_txns
+    $300  online — past: ONL-001 in online_txns, current: IND-002 in india_txns
+    $1000 POS    — past: POS-002 in pos_txns,    current: US-001  in us_txns
+    $200  online — past: ONL-002 in online_txns, current: US-002  in us_txns
+    $750  POS    — past: POS-003 in pos_txns,    current: IND-003 in india_txns
+
+sources:
+  - name: india_txns
+    file: sourcedata/india_txns.csv
+    schema:
+      - name: txn_id
+        type: STRING
+      - name: amount
+        type: DECIMAL
+      - name: txn_type
+        type: STRING
+  - name: us_txns
+    file: sourcedata/us_txns.csv
+    schema:
+      - name: txn_id
+        type: STRING
+      - name: amount
+        type: DECIMAL
+      - name: txn_type
+        type: STRING
+
+target:
+  table: transaction_fees
+  columns:
+    - name: txn_id
+      type: STRING
+      description: Unique transaction identifier
+    - name: fee
+      type: DECIMAL
+      description: Transaction fee in cents (after FX conversion)

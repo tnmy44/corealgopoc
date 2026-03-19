@@ -1,0 +1,5 @@
+trial_id,compound_name,molecule_type,therapeutic_area,site_code,principal_investigator,pi_specialty,indication,icd_code,disease_area,enrolled_patients,trial_start,trial_end,trial_phase,trial_status
+STD001,Paxlovid,Small Molecule,Infectious Disease,RS01,Dr. Sarah Chen,Virology,COVID-19,U07.1,Respiratory Infection,250,2023-01-15,2024-06-30,Phase III,Completed
+STD002,Elrexfio,Bispecific Antibody,Oncology,RS02,Dr. Marcus Weber,Oncology,Multiple Myeloma,C90.0,Hematologic Malignancy,180,2023-03-01,2024-12-15,Phase II,Active
+STD003,Paxlovid,Small Molecule,Infectious Disease,RS03,Dr. Yuki Tanaka,Pulmonology,COVID-19,U07.1,Respiratory Infection,320,2022-06-01,2024-03-31,Phase III,Completed
+STD004,Abrysvo,Vaccine,Infectious Disease,RS01,Dr. Marcus Weber,Oncology,RSV Prevention,J12.1,Respiratory Infection,95,2024-01-10,2025-12-31,Phase I,Recruiting

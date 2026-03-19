@@ -1,0 +1,5 @@
+account_id,account_holder,account_type,branch
+A001,Alice Smith,personal,NYC
+A002,Bob Jones,personal,SFO
+A003,Charlie Brown,personal,DAL
+A004,Diana Prince,business,PDX

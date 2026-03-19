@@ -1,0 +1,28 @@
+description: >
+  Past pipeline that read from a single denormalized transactions table
+  where person_name was already present alongside each transaction row.
+  The SQL was a flat SELECT with no JOINs — all target columns came
+  directly from one table.
+
+sources:
+  - name: transactions
+    schema:
+      - name: txn_id
+        type: STRING
+      - name: person_id
+        type: STRING
+      - name: amount
+        type: DECIMAL
+      - name: person_name
+        type: STRING
+
+target_columns:
+  txn_id:
+    source_columns: [transactions.txn_id]
+    sql_file: sql/txn_id.sql
+  amount:
+    source_columns: [transactions.amount]
+    sql_file: sql/amount.sql
+  person_name:
+    source_columns: [transactions.person_name]
+    sql_file: sql/person_name.sql

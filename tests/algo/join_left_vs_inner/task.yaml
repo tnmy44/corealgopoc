@@ -1,0 +1,40 @@
+description: >
+  Two past pipelines join the same pair of tables (transactions + persons)
+  but use different join types. Pipeline 1 used LEFT OUTER JOIN (its source
+  data had unmatched transactions with no corresponding person). Pipeline 2
+  used INNER JOIN (its source data had every transaction matched to a person).
+
+  The current source data has one transaction with a personid that does NOT
+  appear in the persons table (personid P999). This null-pattern matches
+  pipeline 1's profile. The algorithm should prefer the LEFT OUTER JOIN.
+
+sources:
+  - name: transactions
+    file: sourcedata/transactions.csv
+    schema:
+      - name: txnid
+        type: STRING
+      - name: personid
+        type: STRING
+      - name: amount
+        type: DECIMAL
+  - name: persons
+    file: sourcedata/persons.csv
+    schema:
+      - name: personid
+        type: STRING
+      - name: fullname
+        type: STRING
+
+target:
+  table: enriched_transaction
+  columns:
+    - name: txnid
+      type: STRING
+      description: Transaction identifier
+    - name: amount
+      type: DECIMAL
+      description: Transaction amount
+    - name: personname
+      type: STRING
+      description: Name of the person associated with the transaction

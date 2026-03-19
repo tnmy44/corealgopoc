@@ -1,0 +1,41 @@
+description: >
+  Two past pipelines operate on identical source data and produce identical
+  results, but their SQL is structured differently. Pipeline A joins all tables
+  first then transforms; Pipeline B transforms first then joins incrementally.
+  The per-column pruned SQL from each pipeline has incompatible CTE structures,
+  making it impossible to merge columns from different pipelines into one query.
+  The algorithm must recognise semantic equivalence and commit to one pipeline's
+  structure entirely.
+
+sources:
+  - name: sales
+    file: sourcedata/sales.csv
+    schema:
+      - { name: sale_id, type: VARCHAR }
+      - { name: product_id, type: VARCHAR }
+      - { name: customer_id, type: VARCHAR }
+      - { name: quantity, type: INTEGER }
+      - { name: unit_price, type: DECIMAL }
+      - { name: sale_date, type: VARCHAR }
+  - name: products
+    file: sourcedata/products.csv
+    schema:
+      - { name: product_id, type: VARCHAR }
+      - { name: product_name, type: VARCHAR }
+      - { name: category, type: VARCHAR }
+  - name: customers
+    file: sourcedata/customers.csv
+    schema:
+      - { name: customer_id, type: VARCHAR }
+      - { name: customer_name, type: VARCHAR }
+      - { name: region, type: VARCHAR }
+
+target:
+  table: sales_report
+  columns:
+    - { name: sale_id, type: VARCHAR, description: "Sale identifier" }
+    - { name: customer_name, type: VARCHAR, description: "Customer full name" }
+    - { name: product_category, type: VARCHAR, description: "Product category" }
+    - { name: total_price, type: DECIMAL, description: "quantity * unit_price" }
+    - { name: sale_year, type: INTEGER, description: "Year of the sale" }
+    - { name: region, type: VARCHAR, description: "Customer region" }

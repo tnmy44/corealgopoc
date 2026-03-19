@@ -1,0 +1,51 @@
+description: >
+  Past pipeline operated on a classic star schema: a clinical_studies fact table
+  joined to four dimension tables (drugs, sites, investigators, indications) via
+  four LEFT JOINs. Current sources are partially denormalized — a single trials
+  fact table already contains drug, investigator, and indication info inline, with
+  only a research_sites dimension table remaining. The algorithm must strip 3 of 4
+  JOINs while adapting the remaining sites JOIN to different table/key names, and
+  map renamed columns (compound_name→drug_name, principal_investigator→investigator_name,
+  enrolled_patients→enrollment_count, etc.).
+
+sources:
+  - name: trials
+    file: sourcedata/trials.csv
+    schema:
+      - { name: trial_id, type: VARCHAR }
+      - { name: compound_name, type: VARCHAR }
+      - { name: molecule_type, type: VARCHAR }
+      - { name: therapeutic_area, type: VARCHAR }
+      - { name: site_code, type: VARCHAR }
+      - { name: principal_investigator, type: VARCHAR }
+      - { name: pi_specialty, type: VARCHAR }
+      - { name: indication, type: VARCHAR }
+      - { name: icd_code, type: VARCHAR }
+      - { name: disease_area, type: VARCHAR }
+      - { name: enrolled_patients, type: INTEGER }
+      - { name: trial_start, type: VARCHAR }
+      - { name: trial_end, type: VARCHAR }
+      - { name: trial_phase, type: VARCHAR }
+      - { name: trial_status, type: VARCHAR }
+  - name: research_sites
+    file: sourcedata/research_sites.csv
+    schema:
+      - { name: site_code, type: VARCHAR }
+      - { name: facility_name, type: VARCHAR }
+      - { name: city, type: VARCHAR }
+      - { name: country, type: VARCHAR }
+
+target:
+  table: study_report
+  columns:
+    - { name: study_id, type: VARCHAR, description: "Clinical study identifier" }
+    - { name: drug_name, type: VARCHAR, description: "Compound/drug name" }
+    - { name: therapeutic_area, type: VARCHAR, description: "Therapeutic area" }
+    - { name: site_name, type: VARCHAR, description: "Research facility name" }
+    - { name: country, type: VARCHAR, description: "Country of the research site" }
+    - { name: investigator_name, type: VARCHAR, description: "Principal investigator" }
+    - { name: indication_name, type: VARCHAR, description: "Disease indication" }
+    - { name: disease_category, type: VARCHAR, description: "Broad disease grouping" }
+    - { name: enrollment_count, type: INTEGER, description: "Number of enrolled patients" }
+    - { name: phase, type: VARCHAR, description: "Trial phase (Phase I/II/III)" }
+    - { name: status, type: VARCHAR, description: "Trial status" }

@@ -1,0 +1,4 @@
+receipt_no,sale_date,total_cents,customer_email
+POS-4821,01/15/2024,14999,alice@mail.com
+POS-4822,02/10/2024,3400,carol@mail.com
+POS-4823,03/05/2024,6250,eve@mail.com

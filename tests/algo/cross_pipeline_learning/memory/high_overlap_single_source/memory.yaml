@@ -1,0 +1,32 @@
+description: >
+  Single pre-joined source table with high column name overlap to current sources.
+  Contains the correct business logic (cents-to-USD conversion, risk score bucketing,
+  region code mapping, name concatenation) but no join conditions since all data
+  is in one table. The algorithm should pick this pipeline for expressions.
+
+sources:
+  - name: order_details
+    schema:
+      - { name: order_id, type: VARCHAR }
+      - { name: customer_first_name, type: VARCHAR }
+      - { name: customer_last_name, type: VARCHAR }
+      - { name: amount_cents, type: INTEGER }
+      - { name: risk_score, type: INTEGER }
+      - { name: region_code, type: VARCHAR }
+
+target_columns:
+  loan_id:
+    source_columns: [order_details.order_id]
+    sql_file: sql/loan_id.sql
+  borrower_name:
+    source_columns: [order_details.customer_first_name, order_details.customer_last_name]
+    sql_file: sql/borrower_name.sql
+  loan_amount_usd:
+    source_columns: [order_details.amount_cents]
+    sql_file: sql/loan_amount_usd.sql
+  risk_category:
+    source_columns: [order_details.risk_score]
+    sql_file: sql/risk_category.sql
+  region:
+    source_columns: [order_details.region_code]
+    sql_file: sql/region.sql

@@ -1,0 +1,4 @@
+txnid,personid,amount
+TXN-1,P001,1500.00
+TXN-2,P002,2300.50
+TXN-3,P999,800.00

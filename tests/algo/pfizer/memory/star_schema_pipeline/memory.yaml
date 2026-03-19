@@ -1,0 +1,77 @@
+description: >
+  Classic star schema: clinical_studies fact table joined to four dimension tables
+  (drugs, sites, investigators, indications). Each JOIN resolves a foreign key to
+  human-readable names and attributes. Four sequential CTEs, one per dimension JOIN.
+
+sources:
+  - name: clinical_studies
+    schema:
+      - { name: study_id, type: VARCHAR }
+      - { name: drug_id, type: VARCHAR }
+      - { name: site_id, type: VARCHAR }
+      - { name: investigator_id, type: VARCHAR }
+      - { name: indication_id, type: VARCHAR }
+      - { name: enrollment_count, type: INTEGER }
+      - { name: start_date, type: VARCHAR }
+      - { name: end_date, type: VARCHAR }
+      - { name: phase, type: VARCHAR }
+      - { name: status, type: VARCHAR }
+  - name: drugs
+    schema:
+      - { name: drug_id, type: VARCHAR }
+      - { name: drug_name, type: VARCHAR }
+      - { name: molecule_type, type: VARCHAR }
+      - { name: therapeutic_area, type: VARCHAR }
+  - name: sites
+    schema:
+      - { name: site_id, type: VARCHAR }
+      - { name: site_name, type: VARCHAR }
+      - { name: city, type: VARCHAR }
+      - { name: country, type: VARCHAR }
+  - name: investigators
+    schema:
+      - { name: investigator_id, type: VARCHAR }
+      - { name: investigator_name, type: VARCHAR }
+      - { name: specialty, type: VARCHAR }
+      - { name: credentials, type: VARCHAR }
+  - name: indications
+    schema:
+      - { name: indication_id, type: VARCHAR }
+      - { name: indication_name, type: VARCHAR }
+      - { name: icd_code, type: VARCHAR }
+      - { name: disease_category, type: VARCHAR }
+
+target_columns:
+  study_id:
+    source_columns: [clinical_studies.study_id]
+    sql_file: sql/study_id.sql
+  drug_name:
+    source_columns: [drugs.drug_name]
+    sql_file: sql/drug_name.sql
+  therapeutic_area:
+    source_columns: [drugs.therapeutic_area]
+    sql_file: sql/therapeutic_area.sql
+  site_name:
+    source_columns: [sites.site_name]
+    sql_file: sql/site_name.sql
+  country:
+    source_columns: [sites.country]
+    sql_file: sql/country.sql
+  investigator_name:
+    source_columns: [investigators.investigator_name]
+    sql_file: sql/investigator_name.sql
+  indication_name:
+    source_columns: [indications.indication_name]
+    sql_file: sql/indication_name.sql
+  disease_category:
+    source_columns: [indications.disease_category]
+    sql_file: sql/disease_category.sql
+  enrollment_count:
+    source_columns: [clinical_studies.enrollment_count]
+    sql_file: sql/enrollment_count.sql
+  phase:
+    source_columns: [clinical_studies.phase]
+    sql_file: sql/phase.sql
+  status:
+    source_columns: [clinical_studies.status]
+    sql_file: sql/status.sql

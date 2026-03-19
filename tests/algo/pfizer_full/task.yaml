@@ -1,0 +1,123 @@
+description: >
+  Real-world Pfizer clinical study pipeline. Past pipeline operated on a star
+  schema with 4 source tables (dsopi_st_cln_study_operational, srt_study,
+  cv_study_data, dsopi_st_cln_study_portfolio) joined via INNER JOINs, with
+  complex COALESCE logic to merge overlapping columns from dsopi and srt sources.
+  Current sources consolidate everything into 2 tables (operational_metrics +
+  trial_master) with a single LEFT JOIN. The algorithm must collapse 3 INNER JOINs,
+  eliminate COALESCE merge logic (pre-merged in current source), adapt boolean-to-Y/N
+  CASE expressions, and map ~40 renamed columns.
+
+sources:
+  - name: operational_metrics
+    file: sourcedata/operational_metrics.csv
+    schema:
+      - { name: STUDY_NUMBER, type: VARCHAR }
+      - { name: CRITICAL_PATH_IND, type: VARCHAR }
+      - { name: CONTACT_PROVIDER, type: VARCHAR }
+      - { name: CPOC_PERCENT_COMPLETE, type: DOUBLE }
+      - { name: IQMP_FULL_FLAG, type: VARCHAR }
+      - { name: GLOBAL_PLACEMENT, type: VARCHAR }
+      - { name: MONITOR_INTERVAL_MAX, type: BIGINT }
+      - { name: PIMS_INDICATOR, type: VARCHAR }
+      - { name: RAP_RCPMS_IND, type: VARCHAR }
+      - { name: RCPMS_INDICATOR, type: VARCHAR }
+      - { name: RECRUITMENT_COUNTRY_LIST, type: VARCHAR }
+      - { name: RECRUITMENT_DESIGN, type: VARCHAR }
+      - { name: RECRUITMENT_VERSION, type: VARCHAR }
+      - { name: RECRUITMENT_APPROACH, type: VARCHAR }
+      - { name: RECRUITMENT_BEGIN_DATE, type: DATE }
+      - { name: RFSSMI_INDICATOR, type: VARCHAR }
+      - { name: TMF_REQUIRED, type: VARCHAR }
+      - { name: ADJUDICATION_COMMITTEE, type: VARCHAR }
+      - { name: DMC_FLAG, type: VARCHAR }
+      - { name: APPROVED_PRODUCT_EU, type: BOOLEAN }
+      - { name: IB_REVISION_DATE, type: TIMESTAMP }
+      - { name: PAPER_CRF_USED, type: BOOLEAN }
+      - { name: EDC_SYSTEM, type: VARCHAR }
+      - { name: SUBJECT_TYPE, type: VARCHAR }
+      - { name: COMPLETION_TARGET, type: BIGINT }
+      - { name: ENROLLMENT_TARGET, type: BIGINT }
+      - { name: DATA_COLLECTION_PRIMARY, type: VARCHAR }
+      - { name: DATA_COLLECTION_SECONDARY, type: VARCHAR }
+      - { name: DATA_RETURN_COMPLETE, type: VARCHAR }
+      - { name: DATA_WITHHELD_FLAG, type: VARCHAR }
+      - { name: PARTICIPANT_RETURN_ELIGIBLE, type: VARCHAR }
+      - { name: STUDY_RATIONALE, type: VARCHAR }
+      - { name: MEDICAL_OWNER, type: VARCHAR }
+      - { name: PROJECT_TYPE, type: VARCHAR }
+      - { name: SAP_END, type: TIMESTAMP }
+      - { name: SAP_COMPLETION_PCT, type: BIGINT }
+      - { name: SAP_START, type: TIMESTAMP }
+      - { name: CLINICAL_PM, type: VARCHAR }
+      - { name: EXECUTION_STATUS, type: VARCHAR }
+      - { name: PERFORMING_SITE, type: VARCHAR }
+      - { name: PROJECT_NAME, type: VARCHAR }
+      - { name: PROJECT_TEMPLATE, type: VARCHAR }
+      - { name: PLAN_STATUS, type: VARCHAR }
+      - { name: PORTFOLIO_GROUP, type: VARCHAR }
+      - { name: CLINICAL_PLACEMENT, type: VARCHAR }
+      - { name: CREATE_TIMESTAMP, type: TIMESTAMP }
+      - { name: UPDATE_TIMESTAMP, type: TIMESTAMP }
+      - { name: LAST_MODIFIED, type: TIMESTAMP }
+  - name: trial_master
+    file: sourcedata/trial_master.csv
+    schema:
+      - { name: TRIAL_NUMBER, type: VARCHAR }
+      - { name: TRIAL_TITLE, type: VARCHAR }
+      - { name: SPONSOR, type: VARCHAR }
+
+target:
+  table: study_operational
+  columns:
+    - { name: STUDY_ID, type: VARCHAR, description: "Clinical study identifier" }
+    - { name: BSC_CRITICALPATH_STUDY, type: VARCHAR, description: "Critical path study flag" }
+    - { name: CONTACT_CARD_PROVIDER, type: VARCHAR, description: "Contact card provider" }
+    - { name: CPOC_COMPLETION_PERCENTAGE, type: DOUBLE, description: "CPOC completion percentage" }
+    - { name: FULL_IQMP_REQUIRED, type: VARCHAR, description: "Full IQMP requirement flag" }
+    - { name: GLOBAL_TRIAL_PLACEMENT, type: VARCHAR, description: "Global trial placement" }
+    - { name: MONITOR_VISIT_PLAN_INTERVAL_MAX, type: BIGINT, description: "Max monitoring visit interval" }
+    - { name: PIMS_FLG, type: VARCHAR, description: "PIMS flag" }
+    - { name: RAP_RCPMS_FLAG, type: VARCHAR, description: "RAP RCPMS flag" }
+    - { name: RCPMS_FLAG, type: VARCHAR, description: "RCPMS flag" }
+    - { name: RECRUITMENT_COUNTRY, type: VARCHAR, description: "Recruitment country" }
+    - { name: RECRUITMENT_DESIGN_TYPE, type: VARCHAR, description: "Recruitment design type" }
+    - { name: RECRUITMENT_DESIGN_VERSION, type: VARCHAR, description: "Recruitment design version" }
+    - { name: RECRUITMENT_METHOD, type: VARCHAR, description: "Recruitment method" }
+    - { name: RECRUITMENT_START_DATE, type: DATE, description: "Recruitment start date" }
+    - { name: RFSSMI_FLAG, type: VARCHAR, description: "RFSSMI flag" }
+    - { name: TMF_REQUIREMENT_FLAG, type: VARCHAR, description: "TMF requirement flag" }
+    - { name: COMMITTEE_ADJUDICATION_USED, type: VARCHAR, description: "Committee adjudication used" }
+    - { name: COMMITTEE_DMC_USED, type: VARCHAR, description: "DMC committee used" }
+    - { name: COMMITTEE_NONE_USED, type: VARCHAR, description: "No committee used flag" }
+    - { name: EU_APPROVED_PRODUCT, type: VARCHAR, description: "EU approved product flag (Y/N)" }
+    - { name: IB_VERSION_DT, type: TIMESTAMP, description: "IB version date" }
+    - { name: PAPER_STUDY, type: VARCHAR, description: "Paper study flag (Y/N)" }
+    - { name: PATIENT_DATABASE, type: VARCHAR, description: "Patient database system" }
+    - { name: SUBJECTS_RECRUITED_TYPE, type: VARCHAR, description: "Subject recruitment type" }
+    - { name: TARGET_COMPLETE_NUMBER, type: BIGINT, description: "Target completers" }
+    - { name: PLANNED_PATIENTS, type: BIGINT, description: "Planned patient count" }
+    - { name: PLANNED_PATIENTS_SOURCE, type: VARCHAR, description: "Source of planned patients (SRT/DSOPI)" }
+    - { name: PRIMARY_DATA_COLLECTION, type: VARCHAR, description: "Primary data collection method" }
+    - { name: SECONDARY_DATA_COLLECTION, type: VARCHAR, description: "Secondary data collection method" }
+    - { name: DATA_RETURN_PLAN_COMPLETE_FLAG, type: VARCHAR, description: "Data return plan complete" }
+    - { name: PARTICIPANT_DATA_WITHHELD_UNTIL_LSLV_FLAG, type: VARCHAR, description: "Data withheld until LSLV" }
+    - { name: PARTICIPANT_ELIGIBLE_TO_RETURN_FLAG, type: VARCHAR, description: "Participant eligible to return" }
+    - { name: BUSINESS_RATIONALE, type: VARCHAR, description: "Business rationale category" }
+    - { name: MEDICAL_RESPONSIBILITY, type: VARCHAR, description: "Medical responsibility area" }
+    - { name: PROJECT_PLAN_TYPE, type: VARCHAR, description: "Project plan finance type" }
+    - { name: SAP_FINISH_DATE, type: TIMESTAMP, description: "SAP finish date" }
+    - { name: SAP_PCT_COMPLETED, type: BIGINT, description: "SAP percentage completed" }
+    - { name: SAP_START_DATE, type: TIMESTAMP, description: "SAP start date" }
+    - { name: STUDY_CPM, type: VARCHAR, description: "Study CPM" }
+    - { name: STUDY_EXECUTION_STATE, type: VARCHAR, description: "Study execution state" }
+    - { name: STUDY_PERFORMING_SITE, type: VARCHAR, description: "Performing site" }
+    - { name: STUDY_PROJECT_PLAN_NAME, type: VARCHAR, description: "Project plan name" }
+    - { name: STUDY_PROJECT_PLAN_TEMPLATE_NAME, type: VARCHAR, description: "Project plan template" }
+    - { name: STUDY_STATUS_PLAN, type: VARCHAR, description: "Study plan status" }
+    - { name: BUSINESS_GROUP, type: VARCHAR, description: "Business group" }
+    - { name: CCS_CLINICAL_PLACEMENT, type: VARCHAR, description: "CCS clinical placement" }
+    - { name: DELETE_FLAG, type: VARCHAR, description: "Soft delete flag" }
+    - { name: START_DT, type: TIMESTAMP, description: "Record start timestamp" }
+    - { name: END_DT, type: TIMESTAMP, description: "Record end timestamp" }
+    - { name: LOAD_DATE, type: TIMESTAMP, description: "Load timestamp" }

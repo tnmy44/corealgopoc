@@ -1,0 +1,23 @@
+description: >
+  Simple single-table pipeline. The sales table contains sale_type as a
+  single-character code (W/R/O) which is expanded to a human-readable
+  label via a CASE expression to produce the reference column.
+
+sources:
+  - name: sales
+    schema:
+      - { name: sale_id, type: INTEGER }
+      - { name: person_name, type: VARCHAR }
+      - { name: amount, type: DECIMAL }
+      - { name: sale_type, type: VARCHAR }
+
+target_columns:
+  sale_id:
+    source_columns: [sales.sale_id]
+    sql_file: sql/sale_id.sql
+  person_name:
+    source_columns: [sales.person_name]
+    sql_file: sql/person_name.sql
+  reference:
+    source_columns: [sales.sale_type]
+    sql_file: sql/reference.sql

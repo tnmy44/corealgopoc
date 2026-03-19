@@ -1,0 +1,35 @@
+description: >
+  Tests learning expressions from one pipeline and join conditions from another.
+  Current sources are two tables (orders + customers) requiring a JOIN. Three past
+  pipelines with varying column overlap: (A) single pre-joined table with high column
+  name overlap and correct business logic (cents conversion, risk bucketing, region
+  mapping, name concat), (B) two joined tables with medium overlap but only simple
+  pass-through expressions, (C) aggregated ledger data with low overlap and completely
+  different logic. The algorithm should pick expressions from A and learn the join
+  pattern from B. Exercises Phase 2 (per-column resolution picks A for expressions)
+  and Phase 4 (cross-group merging discovers join condition from B).
+
+sources:
+  - name: orders
+    file: sourcedata/orders.csv
+    schema:
+      - { name: order_id, type: VARCHAR }
+      - { name: customer_id, type: VARCHAR }
+      - { name: amount_cents, type: INTEGER }
+      - { name: risk_score, type: INTEGER }
+      - { name: region_code, type: VARCHAR }
+  - name: customers
+    file: sourcedata/customers.csv
+    schema:
+      - { name: customer_id, type: VARCHAR }
+      - { name: first_name, type: VARCHAR }
+      - { name: last_name, type: VARCHAR }
+
+target:
+  table: loan_summary
+  columns:
+    - { name: loan_id, type: VARCHAR, description: "Unique loan identifier" }
+    - { name: borrower_name, type: VARCHAR, description: "Full name of the borrower" }
+    - { name: loan_amount_usd, type: DECIMAL, description: "Loan amount in US dollars" }
+    - { name: risk_category, type: VARCHAR, description: "Risk bucket: LOW, MEDIUM, or HIGH" }
+    - { name: region, type: VARCHAR, description: "Geographic region: Northeast, West, or Other" }

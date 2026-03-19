@@ -1,0 +1,33 @@
+description: >
+  Row-level inventory movements aggregated with GROUP BY and conditional SUM
+  (receipt vs shipment), then JOINed to products table for product name and
+  unit cost. Stock value computed as current_stock * unit_cost.
+
+sources:
+  - name: inventory_movements
+    schema:
+      - { name: movement_id, type: VARCHAR }
+      - { name: product_id, type: VARCHAR }
+      - { name: warehouse_id, type: VARCHAR }
+      - { name: quantity_change, type: INTEGER }
+      - { name: movement_type, type: VARCHAR }
+      - { name: movement_date, type: VARCHAR }
+  - name: products
+    schema:
+      - { name: product_id, type: VARCHAR }
+      - { name: product_name, type: VARCHAR }
+      - { name: unit_cost, type: DECIMAL }
+
+target_columns:
+  product_name:
+    source_columns: [products.product_name]
+    sql_file: sql/product_name.sql
+  warehouse_id:
+    source_columns: [inventory_movements.warehouse_id]
+    sql_file: sql/warehouse_id.sql
+  current_stock:
+    source_columns: [inventory_movements.quantity_change, inventory_movements.movement_type]
+    sql_file: sql/current_stock.sql
+  stock_value:
+    source_columns: [inventory_movements.quantity_change, inventory_movements.movement_type, products.unit_cost]
+    sql_file: sql/stock_value.sql

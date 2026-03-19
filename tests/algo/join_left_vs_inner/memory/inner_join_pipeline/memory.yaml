@@ -1,0 +1,31 @@
+description: >
+  Past pipeline that used INNER JOIN. Its source data had every transaction
+  matched to a person record — no unmatched rows, no NULLs. This is the
+  pattern when referential integrity is guaranteed.
+
+sources:
+  - name: transactions
+    schema:
+      - name: txnid
+        type: STRING
+      - name: personid
+        type: STRING
+      - name: amount
+        type: DECIMAL
+  - name: persons
+    schema:
+      - name: personid
+        type: STRING
+      - name: fullname
+        type: STRING
+
+target_columns:
+  txnid:
+    source_columns: [transactions.txnid]
+    sql_file: sql/txnid.sql
+  amount:
+    source_columns: [transactions.amount]
+    sql_file: sql/amount.sql
+  personname:
+    source_columns: [transactions.personid, persons.personid, persons.fullname]
+    sql_file: sql/personname.sql

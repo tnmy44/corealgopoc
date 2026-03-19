@@ -1,0 +1,5 @@
+deal_id,contact_id,deal_value,deal_grade,territory
+D001,K001,500.00,A,Northeast
+D002,K002,250.00,B,West
+D003,K003,750.00,D,Other
+D004,K004,100.00,B,West

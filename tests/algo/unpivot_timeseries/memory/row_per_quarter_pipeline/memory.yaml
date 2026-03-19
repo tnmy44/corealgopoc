@@ -1,0 +1,33 @@
+description: >
+  Source data was already in row-per-quarter format. Pipeline just renamed columns
+  and derived a status field. No structural transformation (no UNPIVOT) was needed.
+  This pipeline cannot teach the algorithm how to transpose pivoted columns into rows.
+
+sources:
+  - name: loan_snapshots
+    schema:
+      - { name: loan_id, type: VARCHAR }
+      - { name: borrower, type: VARCHAR }
+      - { name: snapshot_quarter, type: VARCHAR }
+      - { name: balance, type: DECIMAL }
+      - { name: delinquency_flag, type: BOOLEAN }
+
+target_columns:
+  loan_id:
+    source_columns: [loan_snapshots.loan_id]
+    sql_file: sql/loan_id.sql
+  borrower_name:
+    source_columns: [loan_snapshots.borrower]
+    sql_file: sql/borrower_name.sql
+  quarter:
+    source_columns: [loan_snapshots.snapshot_quarter]
+    sql_file: sql/quarter.sql
+  outstanding_balance:
+    source_columns: [loan_snapshots.balance]
+    sql_file: sql/outstanding_balance.sql
+  is_delinquent:
+    source_columns: [loan_snapshots.delinquency_flag]
+    sql_file: sql/is_delinquent.sql
+  status:
+    source_columns: [loan_snapshots.delinquency_flag, loan_snapshots.balance]
+    sql_file: sql/status.sql

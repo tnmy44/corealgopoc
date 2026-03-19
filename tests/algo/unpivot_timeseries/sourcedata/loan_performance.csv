@@ -1,0 +1,5 @@
+loan_id,borrower_name,q1_balance,q2_balance,q3_balance,q4_balance,q1_delinquent,q2_delinquent,q3_delinquent,q4_delinquent
+L001,Alice Smith,50000,48000,46000,44000,false,false,false,false
+L002,Bob Jones,25000,25000,24500,0,false,false,true,true
+L003,Charlie Brown,75000,74000,73000,72000,false,false,false,false
+L004,Diana Prince,12000,11500,11000,10500,true,true,true,true

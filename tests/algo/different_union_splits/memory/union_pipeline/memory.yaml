@@ -1,0 +1,36 @@
+description: >
+  Past pipeline that used a CTE chain to combine POS and online transactions.
+  Each source required a different fee calculation before unioning:
+    - POS:    fee_usd = amount * 0.1  (10% flat fee)
+    - Online: fee_usd = amount * 0.2  (20% flat fee)
+  After per-source normalization the streams were unioned, then a common FX
+  conversion (fee_usd * 100) produced the final fee in cents.
+
+sources:
+  - name: pos_txns
+    schema:
+      - name: txn_id
+        type: STRING
+      - name: amount
+        type: DECIMAL
+      - name: txn_type
+        type: STRING
+  - name: online_txns
+    schema:
+      - name: txn_id
+        type: STRING
+      - name: amount
+        type: DECIMAL
+      - name: txn_type
+        type: STRING
+
+target_columns:
+  txn_id:
+    source_columns: [pos_txns.txn_id, online_txns.txn_id]
+    sql_file: sql/txn_id.sql
+  fee:
+    source_columns: [pos_txns.amount, online_txns.amount]
+    sql_file: sql/fee.sql
+    intermediate_columns:
+      fee_usd:
+        sql_file: sql/fee_usd.sql

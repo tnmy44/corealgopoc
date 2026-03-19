@@ -1,0 +1,52 @@
+description: >
+  Query Adaptation must introduce a JOIN that never existed in the past SQL.
+
+  The past pipeline read from a single denormalized table where person_name
+  was already inline alongside each transaction. The SQL was a flat SELECT
+  with no JOINs, no CTEs, no filters — just column projections.
+
+  The current sources split the same data into a normalized pair:
+  transactions (txn_id, person_id, amount) and persons (person_id,
+  person_name). To produce person_name in the output the algorithm must
+  introduce a JOIN on person_id — a structural element entirely absent
+  from the past pipeline. It must also figure out that person_id is the
+  join key by matching it across both current tables, even though the past
+  SQL never referenced person_id in a join condition.
+
+  All data represents the same five transactions for three people:
+    TXN-001  P001  $150.00  Alice Johnson
+    TXN-002  P002  $230.50  Bob Smith
+    TXN-003  P001   $80.00  Alice Johnson
+    TXN-004  P003  $340.00  Carol Davis
+    TXN-005  P002   $95.00  Bob Smith
+
+sources:
+  - name: transactions
+    file: sourcedata/transactions.csv
+    schema:
+      - name: txn_id
+        type: STRING
+      - name: person_id
+        type: STRING
+      - name: amount
+        type: DECIMAL
+  - name: persons
+    file: sourcedata/persons.csv
+    schema:
+      - name: person_id
+        type: STRING
+      - name: person_name
+        type: STRING
+
+target:
+  table: enriched_transactions
+  columns:
+    - name: txn_id
+      type: STRING
+      description: Unique transaction identifier
+    - name: amount
+      type: DECIMAL
+      description: Transaction amount in dollars
+    - name: person_name
+      type: STRING
+      description: Name of the person associated with the transaction

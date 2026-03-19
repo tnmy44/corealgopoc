@@ -1,0 +1,32 @@
+description: >
+  Past pipeline that used LEFT OUTER JOIN. Its source data had unmatched
+  transactions (personid values not present in persons), resulting in
+  NULL personname rows in the output. This is the expected pattern when
+  not all transactions have a corresponding person record.
+
+sources:
+  - name: transactions
+    schema:
+      - name: txnid
+        type: STRING
+      - name: personid
+        type: STRING
+      - name: amount
+        type: DECIMAL
+  - name: persons
+    schema:
+      - name: personid
+        type: STRING
+      - name: fullname
+        type: STRING
+
+target_columns:
+  txnid:
+    source_columns: [transactions.txnid]
+    sql_file: sql/txnid.sql
+  amount:
+    source_columns: [transactions.amount]
+    sql_file: sql/amount.sql
+  personname:
+    source_columns: [transactions.personid, persons.personid, persons.fullname]
+    sql_file: sql/personname.sql

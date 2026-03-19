@@ -1,0 +1,38 @@
+description: >
+  Source data had credits and debits pre-split into separate columns (credit_amount,
+  debit_amount) in each row. Simple SUM aggregation was sufficient. This pipeline
+  cannot teach conditional aggregation from a combined amount + type discriminator column.
+
+sources:
+  - name: movements
+    schema:
+      - { name: movement_id, type: VARCHAR }
+      - { name: acct_id, type: VARCHAR }
+      - { name: credit_amount, type: DECIMAL }
+      - { name: debit_amount, type: DECIMAL }
+      - { name: movement_date, type: DATE }
+  - name: clients
+    schema:
+      - { name: acct_id, type: VARCHAR }
+      - { name: client_name, type: VARCHAR }
+      - { name: tier, type: VARCHAR }
+
+target_columns:
+  account_id:
+    source_columns: [movements.acct_id]
+    sql_file: sql/account_id.sql
+  holder_name:
+    source_columns: [clients.client_name]
+    sql_file: sql/holder_name.sql
+  total_credits:
+    source_columns: [movements.credit_amount]
+    sql_file: sql/total_credits.sql
+  total_debits:
+    source_columns: [movements.debit_amount]
+    sql_file: sql/total_debits.sql
+  net_flow:
+    source_columns: [movements.credit_amount, movements.debit_amount]
+    sql_file: sql/net_flow.sql
+  activity_rating:
+    source_columns: [movements.credit_amount, movements.debit_amount]
+    sql_file: sql/activity_rating.sql

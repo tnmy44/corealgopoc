@@ -1,0 +1,27 @@
+description: >
+  Past pipeline operated on row-level inventory movements, using GROUP BY with
+  conditional SUM to aggregate receipts and shipments, then JOINed to a products
+  table for names and unit cost. Current source is a single pre-aggregated
+  inventory_summary table where stock totals and product info are already
+  materialized. The algorithm must recognise that the GROUP BY and JOIN are
+  unnecessary and map directly to pre-computed columns.
+
+sources:
+  - name: inventory_summary
+    file: sourcedata/inventory_summary.csv
+    schema:
+      - { name: product_id, type: VARCHAR }
+      - { name: product_name, type: VARCHAR }
+      - { name: warehouse_id, type: VARCHAR }
+      - { name: total_received, type: INTEGER }
+      - { name: total_shipped, type: INTEGER }
+      - { name: current_stock, type: INTEGER }
+      - { name: avg_unit_cost, type: DECIMAL }
+
+target:
+  table: stock_report
+  columns:
+    - { name: product_name, type: VARCHAR, description: "Product display name" }
+    - { name: warehouse_id, type: VARCHAR, description: "Warehouse identifier" }
+    - { name: current_stock, type: INTEGER, description: "Units currently in stock" }
+    - { name: stock_value, type: DECIMAL, description: "current_stock * unit_cost" }

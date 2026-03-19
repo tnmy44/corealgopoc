@@ -1,0 +1,33 @@
+description: >
+  Two separate source tables for salaried and hourly employees, UNION'd together
+  with different monthly pay computations per branch. Salaried uses annual_salary / 12,
+  hourly uses hourly_rate * hours_per_week * 4.33.
+
+sources:
+  - name: salaried_employees
+    schema:
+      - { name: emp_id, type: VARCHAR }
+      - { name: name, type: VARCHAR }
+      - { name: annual_salary, type: DECIMAL }
+      - { name: dept, type: VARCHAR }
+  - name: hourly_employees
+    schema:
+      - { name: emp_id, type: VARCHAR }
+      - { name: name, type: VARCHAR }
+      - { name: hourly_rate, type: DECIMAL }
+      - { name: hours_per_week, type: DECIMAL }
+      - { name: dept, type: VARCHAR }
+
+target_columns:
+  emp_id:
+    source_columns: [salaried_employees.emp_id, hourly_employees.emp_id]
+    sql_file: sql/emp_id.sql
+  name:
+    source_columns: [salaried_employees.name, hourly_employees.name]
+    sql_file: sql/name.sql
+  monthly_pay:
+    source_columns: [salaried_employees.annual_salary, hourly_employees.hourly_rate, hourly_employees.hours_per_week]
+    sql_file: sql/monthly_pay.sql
+  department:
+    source_columns: [salaried_employees.dept, hourly_employees.dept]
+    sql_file: sql/department.sql

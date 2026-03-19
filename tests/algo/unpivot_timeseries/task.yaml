@@ -1,0 +1,34 @@
+description: >
+  LLM fallback required. Current source has pivoted data — quarterly balances and
+  delinquency flags stored as separate columns (q1_balance, q2_balance, ...) in a
+  single row per loan. Target requires one row per loan per quarter. The only past
+  pipeline already had row-per-quarter source data and just reformatted column names.
+  No past pipeline ever performed an UNPIVOT (UNION ALL to transpose columns into
+  rows), so deterministic approaches cannot learn this structural transformation.
+  The status derivation (Critical/Watch/Current) IS learnable from the past pipeline,
+  but the unpivot step blocks the entire deterministic path.
+
+sources:
+  - name: loan_performance
+    file: sourcedata/loan_performance.csv
+    schema:
+      - { name: loan_id, type: VARCHAR }
+      - { name: borrower_name, type: VARCHAR }
+      - { name: q1_balance, type: DECIMAL }
+      - { name: q2_balance, type: DECIMAL }
+      - { name: q3_balance, type: DECIMAL }
+      - { name: q4_balance, type: DECIMAL }
+      - { name: q1_delinquent, type: BOOLEAN }
+      - { name: q2_delinquent, type: BOOLEAN }
+      - { name: q3_delinquent, type: BOOLEAN }
+      - { name: q4_delinquent, type: BOOLEAN }
+
+target:
+  table: quarterly_report
+  columns:
+    - { name: loan_id, type: VARCHAR, description: "Loan identifier" }
+    - { name: borrower_name, type: VARCHAR, description: "Name of the borrower" }
+    - { name: quarter, type: VARCHAR, description: "Quarter label: Q1, Q2, Q3, or Q4" }
+    - { name: outstanding_balance, type: DECIMAL, description: "Remaining loan balance for the quarter" }
+    - { name: is_delinquent, type: BOOLEAN, description: "Whether the loan was delinquent that quarter" }
+    - { name: status, type: VARCHAR, description: "Critical if delinquent and balance > 10000, Watch if delinquent, else Current" }

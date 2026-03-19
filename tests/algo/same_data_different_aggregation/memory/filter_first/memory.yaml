@@ -1,0 +1,45 @@
+description: >
+  Past pipeline that filtered out small individual orders (amount < 75)
+  before joining and aggregating. This approach focuses on significant
+  individual transactions — small purchases are excluded from all
+  calculations. Joins stores first, then customers.
+
+sources:
+  - name: orders
+    schema:
+      - name: order_id
+        type: STRING
+      - name: customer_id
+        type: STRING
+      - name: store_id
+        type: STRING
+      - name: amount
+        type: DECIMAL
+  - name: customers
+    schema:
+      - name: customer_id
+        type: STRING
+      - name: name
+        type: STRING
+  - name: stores
+    schema:
+      - name: store_id
+        type: STRING
+      - name: store_name
+        type: STRING
+      - name: region
+        type: STRING
+
+target_columns:
+  customer_name:
+    source_columns: [customers.name, orders.customer_id, customers.customer_id]
+    sql_file: sql/customer_name.sql
+  region:
+    source_columns: [stores.region, orders.store_id, stores.store_id]
+    sql_file: sql/region.sql
+  total_spent:
+    source_columns: [orders.amount]
+    sql_file: sql/total_spent.sql
+  order_count:
+    source_columns: []
+    sql_file: sql/order_count.sql

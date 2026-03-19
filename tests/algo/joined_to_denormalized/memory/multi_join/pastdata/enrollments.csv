@@ -1,0 +1,5 @@
+enrollment_id,student_id,course_id,grade,semester
+EN001,S001,CS101,A,Fall 2024
+EN002,S001,CS201,B,Fall 2024
+EN003,S002,MK101,A,Fall 2024
+EN004,S002,MK201,C,Fall 2024

@@ -1,0 +1,50 @@
+description: >
+  If the column specific SQL generated for two columns has different structure, it is not possible to stitch them together.
+
+  We either need to regenerate the SQL for one of the columns, and constraint it to have the same structure as the other column, or
+  stitch the SQLs using LLM, which means the mapping we streamed to the user becomes invalid (since LLM will change the column's SQL)
+
+sources:
+  - name: orders
+    file: sourcedata/orders.csv
+    schema:
+      - name: order_id
+        type: STRING
+      - name: customer_id
+        type: STRING
+      - name: store_id
+        type: STRING
+      - name: amount
+        type: DECIMAL
+  - name: customers
+    file: sourcedata/customers.csv
+    schema:
+      - name: customer_id
+        type: STRING
+      - name: name
+        type: STRING
+  - name: stores
+    file: sourcedata/stores.csv
+    schema:
+      - name: store_id
+        type: STRING
+      - name: store_name
+        type: STRING
+      - name: region
+        type: STRING
+
+target:
+  table: spending_report
+  columns:
+    - name: customer_name
+      type: STRING
+      description: Name of the customer
+    - name: region
+      type: STRING
+      description: Store region
+    - name: total_spent
+      type: DECIMAL
+      description: Aggregate spending for this customer-region pair
+    - name: order_count
+      type: INTEGER
+      description: Number of orders for this customer-region pair

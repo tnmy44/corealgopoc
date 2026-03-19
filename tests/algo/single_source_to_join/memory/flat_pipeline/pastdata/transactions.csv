@@ -1,0 +1,6 @@
+txn_id,person_id,amount,person_name
+TXN-001,P001,150.00,Alice Johnson
+TXN-002,P002,230.50,Bob Smith
+TXN-003,P001,80.00,Alice Johnson
+TXN-004,P003,340.00,Carol Davis
+TXN-005,P002,95.00,Bob Smith

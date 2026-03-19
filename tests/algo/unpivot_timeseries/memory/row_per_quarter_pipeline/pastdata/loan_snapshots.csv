@@ -1,0 +1,17 @@
+loan_id,borrower,snapshot_quarter,balance,delinquency_flag
+LA01,Alice S.,Q1,50000,false
+LA01,Alice S.,Q2,48000,false
+LA01,Alice S.,Q3,46000,false
+LA01,Alice S.,Q4,44000,false
+LA02,Bob J.,Q1,25000,false
+LA02,Bob J.,Q2,25000,false
+LA02,Bob J.,Q3,24500,true
+LA02,Bob J.,Q4,0,true
+LA03,Charlie B.,Q1,75000,false
+LA03,Charlie B.,Q2,74000,false
+LA03,Charlie B.,Q3,73000,false
+LA03,Charlie B.,Q4,72000,false
+LA04,Diana P.,Q1,12000,true
+LA04,Diana P.,Q2,11500,true
+LA04,Diana P.,Q3,11000,true
+LA04,Diana P.,Q4,10500,true

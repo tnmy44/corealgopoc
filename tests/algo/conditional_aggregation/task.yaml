@@ -1,0 +1,35 @@
+description: >
+  LLM fallback required. Current source combines credits and debits in a single
+  amount column discriminated by txn_type. The past pipeline had credits and debits
+  pre-split into separate columns (credit_amount, debit_amount), so its SUM expressions
+  cannot be adapted to the current schema — the conditional aggregation pattern
+  SUM(CASE WHEN txn_type = 'credit' THEN amount END) has no precedent. Additionally,
+  net_flow and activity_rating are derived from the aggregated values using business
+  rules that the past pipeline also computed, but the foundational aggregation step
+  blocks the entire deterministic path.
+
+sources:
+  - name: transactions
+    file: sourcedata/transactions.csv
+    schema:
+      - { name: txn_id, type: VARCHAR }
+      - { name: account_id, type: VARCHAR }
+      - { name: amount, type: DECIMAL }
+      - { name: txn_type, type: VARCHAR }
+      - { name: txn_date, type: DATE }
+  - name: accounts
+    file: sourcedata/accounts.csv
+    schema:
+      - { name: account_id, type: VARCHAR }
+      - { name: holder_name, type: VARCHAR }
+      - { name: account_tier, type: VARCHAR }
+
+target:
+  table: account_summary
+  columns:
+    - { name: account_id, type: VARCHAR, description: "Account identifier" }
+    - { name: holder_name, type: VARCHAR, description: "Name of account holder" }
+    - { name: total_credits, type: DECIMAL, description: "Sum of all credit transactions" }
+    - { name: total_debits, type: DECIMAL, description: "Sum of all debit transactions" }
+    - { name: net_flow, type: DECIMAL, description: "total_credits minus total_debits" }
+    - { name: activity_rating, type: VARCHAR, description: "Platinum if net >= 10000, Gold if >= 5000, Silver if >= 0, else Bronze" }

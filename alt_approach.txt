@@ -1,0 +1,705 @@
+@Tanmay [17:38]: It's, you know, at the end we can see all our brainstorming to Claude and ask it to properly document it.
+
+@Kishore Bandi [17:45]: Damn, I didn't know this exists. Where did you, how do you enable it?
+
+@Tanmay [17:47]: On the top left there is like the AA notes button drop down.
+
+@Kishore Bandi [17:50]: Oh
+
+@Tanmay [17:51]: Yeah, I think they launched it like maybe 2 weeks, but because even I noticed it sometime back only.
+
+@Kishore Bandi [17:52]: So I see, wow, amazing. OK.
+
+@Tanmay [18:00]: Yeah Mhm
+
+@Kishore Bandi [18:02]: OK
+
+@Tanmay [18:03]: OK. So, I got your point that this way we can figure out what sources are closely matching to our current sources. And Yeah, OK, go on.
+
+@Kishore Bandi [18:18]: So now, yeah, now comes the part where, OK, you've found all this. Now assume they were after the sorry, matching, there are 5 groups that you have. where by white groups I mean 5 signature, 5 unique signatures that you have. Now you have to merge the signatures. This is the biggest challenging part.
+
+@Tanmay [18:24]: Mhm. Mhm. Merge the signatures as in by signature you mean the like the the columns of each table, like, right? Or the.
+
+@Kishore Bandi [18:37]: Right? So So signature what we mean is say what you said so far in signature contains what tables I used previously, what joint conditions? Maybe additionally group by and filters as well, right? that depends one country, one signature. Now what happens is, it's possible that you might have a very disjoint signature that came in because you are trying to merge customers and orders, right? And now, historically maybe there's no pipeline which merges these two, but, but that is apparently customer reporting separately on how to figure out
+
+@Tanmay [18:53]: Hm.
+
+@Tanmay [19:12]: Mhm.
+
+@Kishore Bandi [19:17]: You know, what is age group and all, and then similarly on the orders you have, how much is the total sales per city wise and all. You have separate queries for them, but you're trying to create customer orders as one, this one. For per customer, can you tell me something, right? at this point, now we should do the signature, you'll never get a signature where both are common together exist in pattern there.
+
+@Tanmay [19:27]: Mhm Hm Right, right. Mhm.
+
+@Kishore Bandi [19:39]: Right? and that's what we're saying that, hey, we might have to downstream somewhere it should happen or a joint between these two should happen. OK? And this is where what we're seeing is now comesal Gorta on how do we merge these two cities or signatures, right? And now, comes the same algorithm. What we say is, OK, top level, sort all the table names on both sides, right? pick up, the table in 911.
+
+@Tanmay [19:47]: OK
+
+@Tanmay [20:03]: What, what side, both sides as in current sources and the past sources, or like past sources with one signature and pass also with other signature.
+
+@Kishore Bandi [20:11]: No, Pasos is gone. So in the, in the third step, what we said was once you get the signature, that you're creating new signature of it which is by replacing all the old ones with the new tables and new schema and new columns everywhere.
+
+@Tanmay [20:13]: OK Got it, got it. And we're doing it at a per column level, right?
+
+@Kishore Bandi [20:27]: Yes.
+
+@Tanmay [20:27]: Hmm.
+
+@Kishore Bandi [20:28]: That, let's call it something, no, maybe, maybe signature group, let's say signature group, right? But signature group that we pick what a signature group means? That means all columns and set this what you found have the same type of signature, which means you can blindly replace the signature group's meaning, right? Does the juichi group contains what, as in like the conditions of all.
+
+@Tanmay [20:47]: I see, I see. I, so, so basically to, if we say that two kind of expressions or to, to, things that are in the same signature group. That means that they will have exactly the same format of like which keys are in which tables. For example, let's say 4 keys are used across all filter join personal IDs, sale ID order ID, revenue ID something. So
+
+@Kishore Bandi [20:49]: Right?
+
+@Tanmay [21:14]: If Personal ID and column ID and sale IDs in different tables and verses in some other scenario they're in the same table. They will belong, definitely belong to the different signature group versus if the the which tables they belong to is the same, then it will belong to the same signature group, right? Got it. OK. Hmm.
+
+@Kishore Bandi [21:32]: Correct. Correct. Exactly, right? so now that we have this, signatures and we, this signature now at this point when you're coming to the merge step, there's no more reference of previous weapon that is lost already. Now all you have is, hey, I have some heuristics about this is the query that's supposed to look like for this new tables that I have in my current source tables. now how do we merge these two, these things together, the given parts, right?
+
+@Tanmay [21:43]: Hm. Got it. And and just understand like we are at this point not dealing with like we're not fetching the exact sequel queries from the past pipeline. It is more like a kind of like a Jason containing a lot of details like, OK, what is the joint condition? What is the group back condition, but in what order they appear, that information's kind of lost, right?
+
+@Kishore Bandi [22:16]: No, if we have the previous aquary also it's fine. So the idea is, given the previous score, you can shrink the tenacity into one just one select query where you can just get the waters from, we just need those details at this point.
+
+@Tanmay [22:31]: OK
+
+@Kishore Bandi [22:31]: Correct, right, like, yes, it, it could, you know, come from another model and so on. Like it could be very complex, but like I said, we to write this predicate pushed on Algo where we push all the way up and then figure out exactly how it came like potter conditions appeared on this table, not on the joint table. On this table itself, how it comes. But if there's a joint table and the joint table is also part of our current source, like we have a bunch of sources also in this pipeline which they use a selector, right? if, if the joint table is also a part of this so, then, OK, add that also into the CDC
+
+@Tanmay [22:32]: Yeah.
+
+@Kishore Bandi [23:01]: Group and then tell. That's your signature group is very important for us. That should exactly coincide with only if we had the cortpo table and the columns that we're looking for from the previous weapons, then we have to pick this up or else that's not a valid pickup for us.
+
+@Tanmay [23:16]: Got it. So OK, so, so, now, just to understand clearly out of the 100 columns, we Selected We have already got like 90 columns with the exact same signature, right, using like whatever searching we had to do on KG, we at the end we all the past data that we fetched from KG will be having the same signature.
+
+@Kishore Bandi [23:40]: Hm.
+
+@Tanmay [23:41]: Right? OK. And now, we, we have like for each column we have some Detail of how that column was generated in whatever pipeline we fetch it from, but for each column, the signature is the same. That means that they are kind of compatible kind of sequel will be generated for that column.
+
+@Kishore Bandi [23:59]: Exactly. Correct.
+
+@Tanmay [24:00]: Right, but they didn't understand that why do we need that that predicate pushed down, etc. in that case, if that is exactly right.
+
+@Kishore Bandi [24:06]: Yeah, so, so, so you imagine, from the previous pipeline when you said, hey, can you, can you tell me how this column was populated? It said, Oh, I got populated because before me there was a a groupe and then it says before me I have a reformat, and then it says before we have a filter before me I have a joint, before me I have a reformat. Now the think of, no, the, the all these layers would have got joined and group and all could added not to answer your problem exactly, but rather there might be other that type may be representing some other problem you case also.
+
+@Tanmay [24:18]: Hmm. Hmm Mhm.
+
+@Kishore Bandi [24:35]: Right? that another columns in the pipeline to get those remaining 9 columns suited to all this complex operation. You might be just a flow to pass through. So you have to figure out how not about whether you, you, you differentiate between pass-through versus who actually touched you in that pipeline, and whoever that you will feel for the only way you can figure notice this do a pretty good push down, right? Figure out exactly at what point are you created and before that, who all were required to create you in the first place.
+
+@Tanmay [24:53]: Hm Right, so
+
+@Kishore Bandi [25:04]: And the
+
+@Tanmay [25:05]: So, so, basically we only want to remove other columns which were like part of some select reformer like basically the other expressions in the format we can safely remove, but any filter, any Group I, those things you want to keep.
+
+@Kishore Bandi [25:12]: Yes No, that also we might have to remove. That's what I'm saying. And how do you decide that for each, for each column, you have the oral sequel, but then imagine you had a grouper and everything, but then in the group I also this column had no meaning. It was just always coming through because in the reformat you did conquetta first time common last name. So full name was Kara Ashton Commerce. Yes, Fulli was there in Group I and everywhere, but is it relevant for this context. It was there because someone asked for group by salary for every name or something. I don't know, right? because of that, it was that, but it had
+
+@Tanmay [25:35]: Mhm.
+
+@Kishore Bandi [25:50]: No meaning in getting the final query, which is, can you tell me how to calculate first thing.
+
+@Tanmay [25:58]: I see. OK, you're saying, so in the past, a ruby was present and full name was part of it, so that we can select full name and get some of salaries or something, but in our case, if you do not want salary, then then that groupie is not required.
+
+@Kishore Bandi [26:14]: Exactly, exactly. Now you don't know whether you want salary or not and that's why we're saying you shouldn't even consider if you try to put all those in and do it to it becomes very overwhelming already to understand. So let's break it down. We're not trying to do all that. We're saying right now you want full name, and I know for full name I need only for the first select query and the reform aim after that. So I'm going to pull that in. Next you'll say, the next column is sum of salary in this also in the new paper also want some of salary, total salary. Now you go back in the pattern, you see, and by the way, for, for first time
+
+@Tanmay [26:33]: Hm. Hm Hm, yeah
+
+@Kishore Bandi [26:44]: You get a signature already, OK? Assume that's it's great and kept. Now 2nd pipeline comes, sorry, 2nd, column comes, so that is sum of salary. You again go back to the knowledge I mean you already queried knowledge graph, right, at this point. You get the same query, but this thing you know this in this query to get that sum of salary. It is very important for you to keep the group and the thing. So the signature changes now to this guy. So this guy's signature will have some more enhancement and so on. OK, now, now comes the signature reduction step or signature grouping, we call it a signature group, right? The signature proing steps comes now for every column this
+
+@Tanmay [26:45]: Mhm Hm Hm, yes
+
+@Tanmay [27:07]: Mhm Hm.
+
+@Kishore Bandi [27:14]: Signature, which of them can be put into one. Now you suddenly realize, hey, you know what, I see my cat first time can be put in the same signature. Why? Because it is the same column and the group I hear also has the same expressions as the sin.
+
+@Tanmay [27:27]: OK, so you're saying that we kind of realize that we can put a group by after full name without affecting full name. And we can bring it to the same signature as salary.
+
+@Kishore Bandi [27:36]: Yes, because it's coming from the same table, like I said, those are order right? we said table matching yes table matching. So, so this is more highly likely to come to this group. but doesn't mean it can fall in the group. It can fall in the group only if it exactly matches the first phase. The second phase is like we will come to phases, like first phases, exact matches grouped together. Now everything is rapped now, but a lot of things are not. Like, for example, Kaket first name Si doesn't match with sum of salary. You cannot put them in the same signature. Now, how do you merge it? Now you figure out the score. Go and
+
+@Tanmay [28:02]: Mhm
+
+@Kishore Bandi [28:06]: Compute the score and you see that the full name score will be more closely, not exactly scored because score was also relevant. We had to figure out, probabilistic score, like I said, weightages for weight has been a problem like knapsack kind of problem, right? Like or job assignment problem. There are multiple people who might have the same thing, but who is more closely related to this guy, right? And that by, by using this sophistication where signature matching will return like function yes clu group or not where, OK, these two tables are matching. This is more closely related to it, but we want, which is the highest matching
+
+@Tanmay [28:21]: Hm. Mhm.
+
+@Kishore Bandi [28:36]: Which means which is a superset that matches, not subset. Like cable attach for everybody, but no, is a table and group are matching somebody else? OK, you're perfect. You come here, right? but only your group joint and varrosis are matching. OK, you're the second best category.
+
+@Tanmay [28:39]: Mhm
+
+@Kishore Bandi [28:51]: So we have to divide into phases. The first phase full match. Second phase, remove one of the clauses, see who matches. Third phase, remove one more cross also and see who matches and keep going like this. And finally we'll be left with a couple of groups that some somewhat matches, a couple of groups where it almost a couple of groups which doesn't match at all.
+
+@Kishore Bandi [29:10]: OK. That doesn't match at all. We'll keep it fully asset because we cannot solve the problem. That is a problem. OK. We'll come to that in the end. Now, given these groups, what you identified is say I have a concatto first name from this table, and I have a group by sum of salary from this table. How do I even merge these two things together.
+
+@Tanmay [29:27]: This is right, right
+
+@Kishore Bandi [29:27]: Right? Yeah. And now, now that's where the the sing comes in. Now historically you look at it and then say have these two columns ever appeared together in that pipeline, like in your when you created a signature, did, like which of these columns have allocated I have only been part of it. If something was part of it, blindly moved them into the same bucket because you can use a previous curias.
+
+@Tanmay [29:29]: Yeah.
+
+@Kishore Bandi [29:50]: Without anything.
+
+@Tanmay [29:51]: No, no, I didn't get this much. So we realized that how to calculate the full name, like what should be the query for it, we realize how to calculate the sum of salaries, which has some group buy. Now we want to merge them. So you said that we need to look in the KG, look in the past pipelines, and figure out whether there was a output table where both of these things appeared.
+
+@Tanmay [30:15]: Right? Full name as well as sum of salaries.
+
+@Kishore Bandi [30:16]: Yes But that you already have it. So in the first time when you queried only, you pull the information, we have all this information. The query what was taken for the full name and the query which was taken further, aggregate.
+
+@Tanmay [30:23]: Hm. Mhm.
+
+@Kishore Bandi [30:29]: OK. what I'm saying is, what are matches, now you know this concat and this one came in the square, which is the query which you already selected. So you can brightly blind blindly merge it. This is one approach, but in this approach which we still have our playlist.
+
+@Tanmay [30:43]: So, so sorry, I still didn't understand like if we can figure out what should be the SQL query for full name, which is just like after some two sources were joined just to a reformat and the other cases like some of salaries where after join there is a group by. Now how do we merge these two together?
+
+@Kishore Bandi [30:59]: Hm That's what I'm saying. In historically, is there a merge pipeline for these two. Because if you remember we actually pulled it from the same query last time when we did concatto first name last name, but there might be use cases where it's not even been merged in the historical pipeline, and you have to merge it. And this is where now it is a more of a product call or maybe you can ask Alemos at this point because
+
+@Kishore Bandi [31:24]: If the user wants sum of salary, they can always blindly merge it because you see we don't have context here as to what they want, we don't know. So if you want to merge it, the only way to merge it is, yes, put content of first time in the group expressions also blindly.
+
+@Tanmay [31:37]: Hm
+
+@Kishore Bandi [31:38]: Why? Because that's the only way you could even merge thisque. It is impossible to merge it in either way.
+
+@Tanmay [31:43]: Right
+
+@Kishore Bandi [31:44]: All right? You, you could not say I want it in the same table and have separate not me group I can get for first and full name. So that means the minute now now we have the set, the the moist logic is very simple. It's like you have the tables which are common, so put the in merge conditions. What expressions are not part of the group. Adam is part of the group A because you want them in the end. There's no alternative. So now we have properly solved problem for one table or maybe two tables also which have a similar joint. But you might now end up after this scenario with two different
+
+@Tanmay [32:04]: Mhm
+
+@Kishore Bandi [32:14]: Disjoint tables.
+
+@Tanmay [32:18]: Hm
+
+@Kishore Bandi [32:18]: Right? It is one table also between these two merging again we can go through one more cycle where, you know, OK, we merge because there's the same table. Just put already could already here also, and then you can merge those two disjoint pipelines at this point. Correct? But imagine there's a signature group that they are two tables on the left hand say there are 3 tables on the right hand side in the groups, and now there's nothing common between these 3, these 5.
+
+@Tanmay [32:41]: Mhm
+
+@Kishore Bandi [32:42]: Right? This merging again what we do is we go back to knowledge at this point and say historically had there been any joint conditions where these two and these 3 tables have been part of anything, even though one could exist where we need a subset here or not. If there's a superset match, perfect. If there's no superset, even subset match between these two exists, we can use that as a joint condition.
+
+@Kishore Bandi [33:02]: And then merge these two group columns also blindly.
+
+@Tanmay [33:09]: OK. So,
+
+@Kishore Bandi [33:12]: So I imagine
+
+@Tanmay [33:12]: In the past, yeah, if they're mesh, we can use that. But if there was a fight there, yeah, one. So if there was a pipeline in the KG right where like these three tables were merged with these 2 tables. Wouldn't that pipeline then would have already scored higher in our initial matching, right? Like, essentially we are saying that we have 5 sources that pipeline pass pipeline had 5 sources, and those joints were happen
+
+@Kishore Bandi [33:17]: So, so imagine there was mhm.
+
+@Tanmay [33:42]: Ing there and we can use the same joints here also.
+
+@Kishore Bandi [33:46]: But the thing is what we are saying is when we started this algorithm we said first pick columns which can fall in the highest group. It's possible in that pipeline only one target column matched, whereas you picked some other pipeline where they were destroying the thing, but 100 columns were matching in these two.
+
+@Tanmay [34:04]: Got it. OK. So we are basically learning the joint condition from a separate pipeline, but the expressions we are learning from a separate pipeline, an expression we are learning like, like what about major business transformations we are learning from a pipeline where the target names are matching more closely, but joint conditions we can kind of infer from
+
+@Kishore Bandi [34:06]: Right
+
+@Tanmay [34:24]: Some of that right then sir
+
+@Kishore Bandi [34:25]: Exactly, exactly because joint conditions don't determine business logic. They determine how relationships works between tables, right? And we are more worried about business logic here, which is expression. So if there's a pipeline where a lot of columns are matching, that is more realistic for our use case right now than countrying somebody who just have all the tables that I'm giving it.
+
+@Tanmay [34:33]: That I
+
+@Kishore Bandi [34:44]: Blindly.
+
+@Tanmay [34:44]: Mhm Yeah
+
+@Kishore Bandi [34:45]: Again, this is the theory I'm going with. I don't know. I haven't looked at the customer. These are all questions we have to ask Machek. Machek, see, honestly, we haven't seen a customer data or a pipeline. We need Pasco somebody to answer this question. This is not an algorithm problem. This is a product problem. They have to tell us how to drive. We can code both.
+
+@Tanmay [35:00]: Mhm
+
+@Kishore Bandi [35:03]: OK. so, but we are proposing because they're not coming with the lagoon, ideally they should have come up with this ideally.
+
+@Tanmay [35:03]: Yeah
+
+@Kishore Bandi [35:08]: Right? but unfortunately, they just raised their hands. So now we will go back and say from art limited knowledge we are coming up with this algorum, OK, but let me finish this, OK? So, and then then we'll figure out how to present it. so now, now what we have is, OK, finally we somehow were able to merge the queries and using historical data and all these deterministic again, by the way, Hungary and algoum is not, it's a n cube problem N3 complexity. so, it's a
+
+@Tanmay [35:18]: Hmm Mhm
+
+@Tanmay [35:36]: Oh
+
+@Kishore Bandi [35:38]: And some of these algorithms are even too parent, so we have to really think about when we when we tell them and we don't touch them. OK, but, but yeah, that's, that's a separate form. We'll we'll figure out. now, now we, now we still have one problem, that is, hey, what about columns which we couldn't identify or the the asthmatic search that told that there's no good relevant solutions. We might have pointed such columns also. At this point we already have the merged condition for 800 columns. we're not going to send the
+
+@Tanmay [35:41]: Oh Mhm Mhm
+
+@Tanmay [36:03]: Mhm
+
+@Kishore Bandi [36:08]: 800 s to them. We're going to send just a blind merged query and whatever to it columns that are are unresolved and to ask a single shot prompt at this point.
+
+@Tanmay [36:15]: Mhm Mhm.
+
+@Kishore Bandi [36:18]: OK, and then say, hey, you figure it out. But the idea here is to reduce the toner to as minimal as possible as deterministic as possible.
+
+@Tanmay [36:25]: Mhm.
+
+@Kishore Bandi [36:25]: We will try to do it, right? Yeah, that's my overall
+
+@Tanmay [36:27]: Got it Right, right, right. OK. So, One thing would be like if the last step we are doing as a one shot, then that context window saturation or exceeding context window that problem will kind of reappear, although I think if you're only doing it for 200 columns, then we do not need to provide any kind of metadata for the rest of the 808 columns only for those 200 columns we need to give some sample, etc. So I guess, yeah, that, that still is better than the the oral venture. No, yeah, but on the oral logic, right? So
+
+@Kishore Bandi [36:56]: Yeah.
+
+@Tanmay [37:01]: Yeah, let, let me. Sync it in a little bit.
+
+@Kishore Bandi [37:06]: Yeah, yeah, yeah. again, I was also, I just got some immediately called you, that's all. I didn't, let's, let's, is there any notes where it summarizes and then we can ask it what do you think about this and stuff.
+
+@Tanmay [37:17]: Yeah, yeah. It, it will give us the notes of what we have discussed, then we can ask some more intelligent to kind of reason about it. Yeah. hm.
+
+@Kishore Bandi [37:27]: Also, one more thing is like if you have this kind of disjoint, that older pattern we said, right, we can blindly put a left left on.
+
+@Tanmay [37:32]: Hmm.
+
+@Kishore Bandi [37:35]: Across all tables, like whenever we find something, because what we're saying is hey we have one source of truth, and we have a couple of other tables. We don't want to lose any of the retailer. Like if it is done, OK, fine now, but probably the remaining column.
+
+@Tanmay [37:47]: Hmm
+
+@Kishore Bandi [37:48]: Correct? So always make a left joint and then figure out what is the common column across both, like, again, it's it can't be ready because what if I most customer ID and transaction ID, right? So it can't be ID for sure.
+
+@Tanmay [38:02]: Is, is a, yeah, like that if the name is like distribulate its transition and the score ID and transition and the score ID then then then we can do that, but in any other case, can we really do that, even if it is like
+
+@Kishore Bandi [38:04]: Right?
+
+@Tanmay [38:17]: Transaction ID somewhere and it, it is TXNID maybe in that case semantic or fuzzy match can work, but we will.
+
+@Kishore Bandi [38:17]: It's that much Yeah, no, no, you know, we have a problem because you see for Zima and semantic technology, if you have exact match to give the highest priority.
+
+@Tanmay [38:29]: Hm
+
+@Kishore Bandi [38:29]: And in this case ID should never be fit, even though it's highest fighting you should never pick it.
+
+@Tanmay [38:31]: I Yes, yes, yes, of course, yeah
+
+@Kishore Bandi [38:33]: And suddenly, you should never pick a name also.
+
+@Tanmay [38:35]: Hmm.
+
+@Kishore Bandi [38:36]: Even to exact so they know, that's why this goes into that boundary where we might have a couple of rules like hey, so if you have buttons sets from products saying this is our financial. Financials will have transaction ID as a name. Then we put TXN ID transID and all these are like, you know, synonymous for transaction ID, right? and we, we enrich it over time. It won't be like first day we'll release and then it'll work for all these cases. No.
+
+@Tanmay [38:53]: Mhm
+
+@Kishore Bandi [39:00]: It will slowly evolve once you start giving it more and more production data.
+
+@Tanmay [39:05]: That's right, right, right. Yeah, so, so one thing.
+
+@Kishore Bandi [39:06]: Right? So we will, we for that then, uh-huh.
+
+@Tanmay [39:09]: Right, yeah, and we do have some heuristics to find out ID right? You can check if it is unique and And we can, we can check if the data matches across 5 lines to to figure out like this foreign key relationships. So we can do some kind of deterministic algorithm on top of that. Yeah, so, so one thing I wanted to say was that, that the way I was thinking into this was that
+
+@Tanmay [39:34]: Mostly When a customer is trying out harmonization, they will have a Like at least for from waterfall, the kind of pattern that we saw is that they have One tape, and then the next day that the tape as in like an input source, right? They have one sources today that they are trying to have the next day, either it will be very similar to the current day's data, with almost the same column names, some extra columns, etc. If it is like, you know, coming from the same vendor. And if it is coming from the some different vendor, then it will have a very different column names, even if the information might might will be in the same industry kind of thing.
+
+@Tanmay [40:14]: So here also, I was trying to optimize for the case where, you know, a lot of the past pipelines are very similar to each other. And then the rest of the pipeline, like like there is a lot, lot of grouping. Some things are very similar to each other, rest of the things are very across groups they are very dissimilar, right? So in this algorithm, it looks like we are
+
+@Tanmay [40:37]: Learning from A lot a lot of pipelines. Very individually and We will be able to extract information from various different sources, right? If there are a lot of different pipelines with slightly different data. Then this will work really well. So I was thinking, can we simplify it so that, you know, like, we
+
+@Tanmay [41:03]: Kind of try to find very similar sources, so similar to what you were saying, like we, we, you are saying that we, we find a signature which is closely matching and even If it is like in some cases very different, we can make it work by all this merging logic, etc. but can we assume that OK, if some past pipeline is very similarly matching in terms of our signature.
+
+@Tanmay [41:26]: Then we just Use All its expressions almost directly. And whatever doesn't work, whatever target columns are not present, we, we can fall back well then.
+
+@Kishore Bandi [41:38]: I can, I, I don't mind if you can find something that great, that good of a pipeline if it exists, yes, but see very first pipeline which they're going to build will not have anything.
+
+@Tanmay [41:48]: Right, right, right. That is true, that is true.
+
+@Kishore Bandi [41:48]: We have to build it from scratch. So we we need to build this because all all they're saying is mapping is one skin material somewhere they're seeing first class and they love it, but mappings is hardly of any help for us other than expressions. so we still have to build this kind of algorithm to get started itself.
+
+@Tanmay [41:57]: Mhm That's right
+
+@Kishore Bandi [42:10]: Again, I don't mind making faces. We'll say, hey, for first example, we say we're assuming you give a lot of information, stories will will diverge it, but I was trying to build one generic way, again, this is not like fully great or anything at all, right? It is very brute force way of doing a lot of things. but then we build this, we figure out where the problems are, where we can optimize it, and then go research more and figure out because I can like we can tell Mache that, hey, you know what, we just like we just discussed for one hour in the end, and this is what we
+
+@Tanmay [42:23]: Mhm. Right, right, OK. OK.
+
+@Kishore Bandi [42:40]: Came up with, maybe we'll have a more concrete solution once we spend more more day on it, but what do you think on a high level? Is it OK for you to, for us to proceed forward in this direction? Do you think it's going somewhere?
+
+@Tanmay [42:44]: Mhm Right, right, yeah. That, that makes sense, yeah. So, but, but to be honest, like I, I think I still don't understand some part of it. So I'll try to like tell you what, what I understood on the high level, right? And, and you let me know if my understanding is is wrong somewhere. So we have
+
+@Kishore Bandi [42:58]: No? Mhm
+
+@Tanmay [43:08]: A bunch of sources right now in our in our pipeline. So let's say S1 S2S3 like some people data, some sales data, some some transaction data. 3 tables, right? And we first try to find out from knowledge graph that give us
+
+@Kishore Bandi [43:19]: Mhm
+
+@Tanmay [43:26]: For Yeah, first give us Like we, we give it all the details of what we have right now. What are the source tables, the three source tables, and what are all the columns inside it? And we ask us that give us the closest matching past pipelines.
+
+@Tanmay [43:46]: Over the past halfination sessions that that you know of. So it will say that, OK, this is like fast pipeline, one which has source one source to source three with these names and these columns, and this is the past pipeline too with 4 sources. This is a bus by line 3 with two sources. So, so here we are not
+
+@Tanmay [44:09]: Ask querying at a column level, we are querying at the overall level, right? Overall, what is the closest match, right?
+
+@Kishore Bandi [44:15]: Mhm
+
+@Tanmay [44:16]: That's the first step, right? OK, and once it gives us the the the the set of pipelines and no, no, it will not give us the exact type thing, but it will say that, OK, we had, we had this Kind of, for, for this pipeline we had this source data and it created these target columns.
+
+@Tanmay [44:38]: And oh by the way, In, in this case, are we asking KG only for the pipelines which use the exact same CDM in the sense the target tables were exactly the same. Or that can be different also
+
+@Kishore Bandi [44:54]: It can be different also, right? approximate also, oh, the table names, no, table names not like.
+
+@Tanmay [44:58]: No, no, that target table schema because at least for waterfall it's like their targetable schema is very strict, very fixed across
+
+@Kishore Bandi [45:02]: Yeah
+
+@Tanmay [45:07]: One year they they do a lot of stuff that the CDM very rarely changes or evolves. It's the exact same target schema which is which every harmonized pipeline kind of writes the data to.
+
+@Kishore Bandi [45:21]: Got it, got it. I would say, see, God is saturated for color matching. We're going to invoke the same thing beat source matching or target matching. So if there's an exact match, villain with perfect solution, sorry choice. If there's no, then we'll give a lower score for it, but she will still pick that also as a consideration for lookups.
+
+@Tanmay [45:39]: Got it, got it. Yeah, so also this might be a product question also, like, do, do, do we want this learning across CDMs. So, so that there can be like multiple teams which are slightly different, different CDM, but there is a lot of business logic which is which is shared across them. So, yeah, we, we, we can go and talk about that. OK. So now we have current sources. We asked KG to give us examples of past pipelines where similar target tables and similar source tables were used, even though it can be some extra sociable, some less socit
+
+@Tanmay [46:09]: Able are slightly different things. And then we will go at target column level and for each target column, we will find
+
+@Kishore Bandi [46:10]: Mhm.
+
+@Tanmay [46:17]: The kind of lineage across all those past pipelines, find the some like capture some signature out of that lineage, which essentially captures like what all columns were required to create that target column and what were like including basically the filter keys and joint keys, etc. all those things. And, and what, what, what tables they came from. So, so it will find some kind of signature, then we will group all those target columns in the business of signature.
+
+@Kishore Bandi [46:40]: Mhmm
+
+@Tanmay [46:47]: So it's essentially what we'll end up finding is like, OK, out of the 100 columns, these 2 were coming from exactly maybe the exactly the same pipeline, and these other 2 was coming from very similar pipeline, and this 4 might be coming from some pipeline which is very different from the other 20 plus 20 that we found out. So
+
+@Tanmay [47:07]: Even for those 1st 20 and the 2nd 20, even if the pipelines that they came from is not exactly the same, but it's very same. So we put that in the same signature group, right? Or, or, or do we defensive proof to be exactly the same set of source to target.
+
+@Kishore Bandi [47:17]: Yes I can, we can have multiple phases of signatures, right? Like one is exact match and then we'll say approximate match and then it can be less score and then third one is, OK, even no somatic search also but two of the clauses are matching. One of the clauses of music is not matching. then we merge these two. So CT merges happen the minute you try to merge the groups also, even the CD merges should happen there only. The logic. So as we're merging the signature groups, even the query in the backendrige representing the solar keep morphing there only.
+
+@Tanmay [47:43]: I see. Mhm Got it, got it. OK. Yes, then the rest I kind of understood. Once we have the like the sequel for each tarot column, then the merging part comes.
+
+@Tanmay [47:59]: And while merging, we'll make sure to kind of adapt it to our sources. So far we are fine, even if it is not exactly matching our sources.
+
+@Kishore Bandi [48:07]: Courage.
+
+@Tanmay [48:10]: Got it
+
+@Kishore Bandi [48:11]: Correct, correct, correct
+
+@Tanmay [48:12]: OK, and just, OK, can you like maybe let's take this example, right, which I'm sharing I don't like the very simplest all is actually too simple. It should be, take it, but essentially in this case what is happening is like let's say knowledge graph only knows about one past experience when it does a data harmonization and there there was like one transaction stable and it just simply selected transaction ID amounted person name from the transaction. And in our case, we have this data where transaction
+
+@Tanmay [48:42]: S and people are separate tables. So in that case, when we ask KG to give us the closest match, it will just give us one pipeline and it has this kind of structure, and it is not exactly matching our sources, but OK, that's the best that we have. So now for each target column, we will see what all columns were used for it, and it looks like this three since they're coming from the same pipeline, their signature will be exactly the same, even though it will not match signature of our current pipe in the the
+
+@Tanmay [49:12]: The sources structure or biline. Now we will simply use these and kind of transformed this sequel to our format, so this will become for transaction ID it will become something like like select transaction ID from transactions for person name, it will become select select person name from persons instead of transactions. So now we need to merge these two, and while merging, we want to again query
+
+@Kishore Bandi [49:12]: Correct
+
+@Kishore Bandi [49:31]: Correct Correct.
+
+@Tanmay [49:42]: KG or or we already have the results to figure out how do we join transactions and And persons
+
+@Kishore Bandi [49:50]: Correct. Correct
+
+@Tanmay [49:51]: And for that, we can maybe look at some other pipeline which was in the past was used to join these two.
+
+@Kishore Bandi [49:57]: Correct. But if you don't find anything and we don't have any good matching conditions also. Then the we don't, we're not gonna do anything here. We just fall back to LLM. These are, this will be marked as LLM mergers.
+
+@Tanmay [50:10]: Got it
+
+@Kishore Bandi [50:10]: Because they'll be disjoint tables
+
+@Tanmay [50:12]: OK. And in this whole scenario, once at the end we do the merging, let's say we were able to find from KG. So at the end we will do the final full march to get this kind of
+
+@Tanmay [50:28]: Joined kind of sequo right where we figure out the joint conditions. We have the expression already and we figure out the final sequel, but until this point of time, we will not be able to stream any Mappings through the front end
+
+@Kishore Bandi [50:41]: Correct.
+
+@Tanmay [50:41]: Right? Got it. So, so this, this is, this will not be like a streaming algorithm, but it will be a much faster algorithm than one shot because we are doing things in parallel and we are doing a lot of things deterministically.
+
+@Kishore Bandi [50:43]: Correct. No, we can stream each group, right? So, like, as I mentioned, like once we create you transform we, we run that grouping algorithm and figure out, OK, the 50 columns belong to Group 1, 60 km belong to group 2, but rest all are like 10 columns, 5 columns, and so on. Now we know these two are major chunks which will probably always stay around.
+
+@Tanmay [51:15]: Hm
+
+@Kishore Bandi [51:15]: It's possible and the final thing, maybe ALM will say you did it all wrong. I, I agree, but this thing we send it right away because these are related to mistake and now we have to retrofit remaining columns into these groupings and creating newer signature group.
+
+@Tanmay [51:31]: But, Even for those 90 columns, if you're able to let's say like for 50 columns, we found some sequel for fortikoms we found some sequel, when we joined this 50 column generating sequel with that 40 column sequel. At that point of time, some new joints might appear there, right? So some extra things might happen. So at this point of time,
+
+@Tanmay [51:57]: Until we have joined those 50 with those 40, we cannot send it to front desk, right? Like just if we just send the sequel for those 50 to the front end or or the mapping for some data. Then something might change after we have joined it with the rest of the 4TM and then whatever metrics we send to the user that OK this column has this many number of count or this many duplicate that that might not be correct, right, and we'll need to update the user.
+
+@Tanmay [52:24]: So, so I
+
+@Kishore Bandi [52:25]: Sorry, can you, can you repeat that again?
+
+@Tanmay [52:27]: So Let's say that for out of 100 columns, for 50, we were able to generate a merged sequel. And then for the 40, we were separately able to generate a mudge sequel which also has a group by right for the 1st 50 there was no good buy for the rest for tea, there is a group by.
+
+@Kishore Bandi [52:45]: Mhm.
+
+@Tanmay [52:49]: So Before, let's say for the 1st 50 we we did it in 5 seconds. For the rest, 40 we did it in 10 seconds. So When can we send the first mapping or any kind of data to the front front end can we send it at 5 seconds when we only had the sequel for the 50 columns, or do we need to wait for at least 90 columns, like whatever columns we are doing deterministically, getting the sequel for those 90 columns before sending it to front end.
+
+@Kishore Bandi [53:18]: Sequel for the 90 columns also and you have to do opreto, you know, like you can't start this process without having the sequel, because the signature gets created from the sequel, correct?
+
+@Tanmay [53:31]: Right, OK. I, I thought that for those 40 since their their signature were close to each other for these 50 their sign were close to each other. We first separately created the sequel queries for both groups individually and unverted.
+
+@Kishore Bandi [53:44]: Yes, yes, that we did. Yes, that we did, that we did, but, no, you, you can't, so if you want to explain that you why these things separately, yes, you can stream it on and so they can look at some data, but the combined result is also very important, right? Because when you combine, there's an aggregation which probably might not work out. Like there's a group here, there's a group over here, and there's no commonality at all in this final one.
+
+@Tanmay [53:46]: Huh Hm.
+
+@Tanmay [54:09]: Mhm
+
+@Kishore Bandi [54:09]: Right? and that, that is a problem. So these two in separately as we can send it, we can show that, hey, this is how it's looking. now, I think me or not, we'll show some like that's a broad question at this point. at this point, we can start sending these. they will most probably remain the same, but if there's a possibility in the last minute, we will, revaluate what we have done. Just like what cursor also does, right? It will generate, generate then finally the last step we realize, oh, I couldn't do it, so maybe what it res or doing it goes and starts again fresh. All the coo
+
+@Kishore Bandi [54:39]: Sit and loose
+
+@Tanmay [54:41]: That's right, right, right, yeah, but I, I think in this case product might have a problem with that because it's like we are telling user that OK, we have this mapping you can start reviewing it, but if that then that changes that like like user might be confused or frustrated that OK, why did you send me something if you are not so sure about.
+
+@Kishore Bandi [54:56]: I see. So then, then we, then we take another call. We'd say that hey, yes, we found all of these, but they can't come in the same day.
+
+@Tanmay [55:02]: Hm.
+
+@Kishore Bandi [55:02]: You don't create separate tables for all these three because they are just very disjoint. Right?
+
+@Tanmay [55:10]: No, no, no, what, what I was saying that maybe we can just not send anything to the front-end front end just sees loading, loading or doing harmonization and once we have merged all those 90 Columns sequel together. At that point of time we are fairly sure that OK, for the rest of the 10 columns we we have will rely on LLM to complete the sequel, but for 90 columns we are like 99% sure that this is the
+
+@Tanmay [55:35]: Data like this is the correct sequel and whatever data this sequel generates is the correct data so we can stream it to Front end Is what I'm saying that we can just wait and not send things to London. So, so essentially it will become like a non-streaming kind of harmless sensation. Everything comes to the user together at the end.
+
+@Kishore Bandi [55:44]: Hm Yeah, yeah, we can, we can do that also. But that's again a product, call if you ask me.
+
+@Tanmay [55:56]: Yeah. Right, right, yeah, to be honest, yes, yeah. but, but, but so far, what we have, we are saying is like generation for this 90 columns is helping deterministically, right? There is no LLM call so far.
+
+@Kishore Bandi [56:02]: Right. Yes, no LM call. And until we finally figure out there's just no way, there's no historical pa, we just don't know how to merge these two. we can also do one more thing. We can also figure out again, go and query from Knowledge Crop. Is there a primary care foreign key which is between the two tables. Perfect if it is there.
+
+@Tanmay [56:14]: But
+
+@Kishore Bandi [56:29]: Right? and sometimes that is also not possible. then, yes, we fall back to a. The LMM is the last step where we do all of these determination tools. We can't figure out because there will be used cases like that and then we cannot say we couldn't figure out. So we'll go to a lymph, we'll figure out somehow and then show it to the user.
+
+@Tanmay [56:45]: Sorry, for what, what, what's that? The other lymph part.
+
+@Kishore Bandi [56:48]: When that when this joint, when they're disjoint tables, and we look at the, and there's no historical summary on how to join these two tables.
+
+@Tanmay [56:55]: Mhm.
+
+@Kishore Bandi [56:56]: But in, in that, signature groups, right? so then we go and look at, is there a primary key foreign care relationship in the meter of the table defined. and if it is defined, now check if that foreign keys of both tables have a common table or not. Inside that warehouse.
+
+@Tanmay [57:14]: Hmm
+
+@Kishore Bandi [57:15]: Hierarchically, if nothing like that also exists, then blindly just go back to the warehouse, LLum and then say, hey, Eli, you figure it out. How to merge these two queries, and at this point we're giving actually two queries. We're not saying here's my quote.
+
+@Tanmay [57:24]: Hmm.
+
+@Kishore Bandi [57:28]: And columns figure out how to me no. We actually have a query which represents both the target columns, and the tables. We give both that information and we say merge these two, queries and then give you the output.
+
+@Tanmay [57:32]: Mhm Got it. And, but they will be like kind of large queries, so If it merges them, wouldn't it become like as slow as like a one shot.
+
+@Kishore Bandi [57:53]: OK, or, or, or, or the better routers then another solution for me. is, Hirosakin another fallback before you actually dump the entire query, go run this query and then get the scheme answers for it.
+
+@Tanmay [57:53]: Right
+
+@Kishore Bandi [58:07]: For the left hand side, for the right-hand side. Get the list of calls that I will be here.
+
+@Tanmay [58:09]: Mhm Hm
+
+@Kishore Bandi [58:11]: Tampierum he hear all the original source columns for all the tables.
+
+@Tanmay [58:16]: Mhm
+
+@Kishore Bandi [58:16]: Yeah my existing two queresis columns that I have.
+
+@Tanmay [58:19]: Mhm
+
+@Kishore Bandi [58:20]: And there's the name of my tables. Can you figure out if there's a merge condition possible. If it can tell us by just this information what are my conditions, OK, we have two CTs now. We just have to join to those two cities, Go? We just need the output scheme of the CD, that's all at this point.
+
+@Tanmay [58:36]: OK, so if we have the output schema, then we can figure out by Using LLM what, what is the
+
+@Kishore Bandi [58:46]: Yes, but if Ellon says no, this is not enough information, I can't do it, then sorry, we give the entire query and the source called, yes, it will be slow, but there's just no, I don't find an, I don't think I can find another way beyond this.
+
+@Tanmay [58:46]: Joining condition That's right, right, yeah. Also, if we just use the schema of the final column, that means that we are kind of saying that these two queries will remain intact at the end we will use some kind of join to join them, right? Instead, it's if it's possible that they were like mostly very similar kind of table. So the they might want to, might have wanted to introduce to join in between somewhere, otherwise, let's say a lot of the
+
+@Kishore Bandi [59:14]: Yes
+
+@Tanmay [59:30]: Later filtering, joining, etc. they are doing is pretty similar, the aggregated setup. Now we'll have two paths which are doing something similar at the end they're getting joined, which will be less readable than if a limb figured out that OK, let's join these two in the starting out itself and make the rest of it.
+
+@Kishore Bandi [59:38]: Correct Possible. That is very much possible. That's why we are trying to see first an easier approach where the joint, the final schema will have very less columns. So is it able to figure out something from these columns also or not? If it cannot, yes, then we give the oral cream and then we might modify the entire query only. It might join the beginning, very beginning, as I mentioned.
+
+@Tanmay [59:56]: Mhm Mhm Right Yeah
+
+@Tanmay [1:00:13]: OK. Sounds good. Yeah. Let, let me ask now Cloud to summarize all those things and yeah, refine it and, and document it. And then we
+
+@Kishore Bandi [1:00:22]: OK. one second, complete query. I'm just writing this how to merge the city that logic I'm writing the the grouping I know you know how to create a signature signature groups and all. I'm not writing those parts.
+
+@Tanmay [1:00:23]: Yeah. Right, right. I Kind of understood, although I wouldn't say I'm like very like I have to think a little bit more to just think like how well that that will work, what will be the caveats, etc.
+
+@Kishore Bandi [1:00:46]: Mhm. OK, so this is what I have The 10 Yeah There's a city much logic
+
+@Kishore Bandi [1:01:04]: Oh, yeah, OK, I'll bring that right here.
+
+@Tanmay [1:01:07]: Yeah, I, I'm, I'm seeing it. OK, if you put here, I think A will also read it, so that's better.
+
+@Kishore Bandi [1:01:12]: Oh, wow
+
+@Tanmay [1:01:13]: I, I'm not sure if it reads like huddle comments, huddle relis but yeah, if it does it, that will be cool.
+
+@Tanmay [1:01:55]: So Kis sure like for the second point, right, if they're the same form but a different group by.
+
+@Kishore Bandi [1:02:01]: Mhm
+
+@Tanmay [1:02:03]: So
+
+@Kishore Bandi [1:02:03]: You can watch them
+
+@Tanmay [1:02:04]: Rated
+
+@Kishore Bandi [1:02:04]: Right, because people, yeah.
+
+@Tanmay [1:02:06]: No, sorry, how, how is it Master?
+
+@Kishore Bandi [1:02:09]: Because group, it's, so if it's the same table, Grouppa can always add a comma, a traditional group by, sorry, you can join it later on with the same primary care. So you say group by sum of salary and that count also you can keep adding more to the same group I know. There's never a problem there.
+
+@Tanmay [1:02:19]: But Right, so, so, so essentially You, like, but do you have here at a separate CTs.
+
+@Kishore Bandi [1:02:34]: Correct. So, now this is a case where you're saying, OK, in the group I, the groupi expression itself is different, not the aggregation expression, but the group expressions are different.
+
+@Tanmay [1:02:42]: Mhm
+
+@Kishore Bandi [1:02:43]: Right? Like your grouping, grouping by city in one place, but the grouping by Kashmiri and another place.
+
+@Tanmay [1:02:46]: Mhm Yeah
+
+@Kishore Bandi [1:02:49]: Right? So now what we do is we figure out what is the, but they're coming from the same table, which means you will also have like one additional key of some sort, which you can, you can use to group it like ID or customer ID or something. We could see table ultimately, which means you can always group them together.
+
+@Tanmay [1:02:54]: Mhm Mhm Mhm Right, so, so that means that both the group buys like like you're saying that from tables they're two separate groups by gems are forking, and both should have the primary key
+
+@Tanmay [1:03:14]: In the group by clauses, so that the primary key is preserved, which we can use later on to to do the joining, right?
+
+@Kishore Bandi [1:03:21]: If, if they are, if they have primary care, the original one also, but if they remove primary care in the original one, then we merge the grouper into Groupi city region there only.
+
+@Tanmay [1:03:31]: Hm
+
+@Kishore Bandi [1:03:31]: In that same only, because that's only we can even merge it. There's no way around it.
+
+@Tanmay [1:03:36]: Right, right, right, yeah. I, I, I feel like in real scenarios, there will be very rare case where we actually would want to for the group pirate. You probably want to do it in the same group I only.
+
+@Kishore Bandi [1:03:43]: Correctly. Correct, correct. Yeah. The folk is only for cases where I'm saying that, you know, you have separate like the customer ID is also part of it, but they're written very complex queries. We don't emerge them, OK, then we can keep it separated by the merging end later on. That is also fine.
+
+@Kishore Bandi [1:04:03]: Actually you're right. Maybe then let's merge your right, you're right. that, that also ultimately will merge it, so let me edit this. We just say, same city, merge,
+
+@Tanmay [1:04:09]: Yeah
+
+@Kishore Bandi [1:04:13]: Same city either merge via Merge via common key Or use What is that? I forgot, sorry. Commentary, mhm.
+
+@Tanmay [1:04:25]: Well, the, the Wait a second, one more issue. So if we are, if we have the primary key in the group by clauses. Then there will be no grouping, right? Grouping is the
+
+@Kishore Bandi [1:04:35]: Yeah, no, no, exactly. That's why I'm saying common key. If there's a common key or put a group grouping blindly. If the common case, let's say both are on the city only.
+
+@Tanmay [1:04:37]: Yeah. Right, right, right, right, right.
+
+@Kishore Bandi [1:04:43]: That it.
+
+@Tanmay [1:04:46]: Yeah, but even in that case, if one is on city comma, country, and one is on C name.
+
+@Kishore Bandi [1:04:54]: State
+
+@Tanmay [1:04:55]: Then that will Actually be Different that that that will lead to different tables and the city itself Will not be unique, so the joining will not work.
+
+@Kishore Bandi [1:05:10]: No, but, but the thing is, if there is such a concept existing, we'll never be able to merge this data.
+
+@Tanmay [1:05:17]: Yeah, yeah, so anytime we find that there are two groups that we want to merge, which have very different keys. That means probably we just did something wrong, right? So I think yeah, most likely what will happen is that they will have almost the same case, just one different, one different which we, we should put to the same city, like I in the same group, like, OK, let me read through the rest.
+
+@Kishore Bandi [1:05:28]: Correctly. Yeah
+
+@Tanmay [1:05:53]: So, so how do you figure primary care quarantine?
+
+@Kishore Bandi [1:05:53]: What could this be
+
+@Tanmay [1:05:56]: Of the source to us
+
+@Kishore Bandi [1:05:58]: Crawlers
+
+@Tanmay [1:05:58]: Puristically
+
+@Kishore Bandi [1:06:00]: Roller crawlers
+
+@Tanmay [1:06:01]: I, I, by like looking in the historical pipelines and figuring out the time again for the purpose.
+
+@Kishore Bandi [1:06:07]: So the pain or if it's different, obviously in the times had the warehouse for steeples.
+
+@Tanmay [1:06:13]: I see. Hmm, I, I think, yeah, we'll have to make it in the, like, like if we, if, if we end up deciding that primary key is like a very important thing for us to do hernation, then we'll have to ask, make it part of the user experience itself because I think a lot of time harmonization will happen when user directly uploads a CSV file or something. And so the primary key will not be tagged.
+
+@Kishore Bandi [1:06:33]: No no no.
+
+@Tanmay [1:06:36]: So but, but I think yeah we can make that a requirement from broadside that user needs to provide the remVE.
+
+@Kishore Bandi [1:06:37]: Right Yeah, yeah
+
+@Tanmay [1:06:43]: All right, OK. Yeah, I, I think if you right pri for each table, then that makes things.
+
+@Kishore Bandi [1:06:44]: Good.
+
+@Tanmay [1:06:49]: Yeah, with more easier for us. We, we can use that key to, to, to, to likely instead of randomly guessing the primary.
+
+@Kishore Bandi [1:06:57]: Got, got
+
+@Tanmay [1:06:57]: OK, you do.
+
+@Tanmay [1:07:21]: OK, so Schema analysis, and we find that shared cosm between those two, right? For schema this is based join.
+
+@Tanmay [1:07:39]: Got it Hey, you mute.
+
+@Kishore Bandi [1:07:42]: Oh, sorry, sorry. Yeah, yeah, correct.
+
+@Tanmay [1:07:44]: OK, cool, yeah, this. Sounds Good. Yeah, we like probably will lead to size this on some slightly complex use case to see how, how that would, this will work.
+
+@Kishore Bandi [1:07:59]: Yes, yes, I will Yeah, I think like if you brainstorm more on this, we might be able to come up with sound and we'll also find a lot of skills. It might not work also
+
+@Tanmay [1:08:09]: Yeah They, they, right. You have a verte, but yeah, it looks, looks like, yeah, we've been probably need like 1, 1.5 a day more to just think about this, to refine this, but OK.
+
+@Kishore Bandi [1:08:20]: Correct
+
+@Tanmay [1:08:22]: Yeah, let, let's
+
+@Kishore Bandi [1:08:22]: That's it.
+
+@Tanmay [1:08:24]: Which the initial or do my check tomorrow.
+
+@Kishore Bandi [1:08:26]: Yeah, yeah, I wish the matches scholars at least to a man. This was too soon
+
+@Tanmay [1:08:32]: Yeah Yeah, actually, like for me, like he, he has given this like 2-3 days back to me, you know, thinking of the generic. Genetic solution to this problem. I, I was like anything I think it, it feels like someone zuphos are there.
+
+@Tanmay [1:08:51]: That, yeah. That nothing, no good solution comes to my mind. But, OK, maybe let's have an initial discussion where we can also ask the product questions that we, we have, right, what kind of CDM across CDM do we want to learn or and pick primary gets and we ask to use it.
+
+@Kishore Bandi [1:08:58]: Yeah, yeah.
+
+@Tanmay [1:09:12]: After that, we can, yeah, we can refine this more.
+
+@Kishore Bandi [1:09:12]: Correct, correct Can you make a list of those part questions or, or at least just remember, so 11 more question I was really badly want to answer it. If you ever encounter a problem where we can't join these two parties, or can you see different tables, or like historically, like what is the business doing today or would they never give us such conditions where, hey, this is particularly not possible to merge.
+
+@Tanmay [1:09:27]: OK.
+
+@Kishore Bandi [1:09:38]: Is that even a valid
+
+@Tanmay [1:09:41]: So I think at least from the waterfall examples, like it's like there CVM is very well defined, and they're like the expectation is that they do whatever harmonization and mapping, etc. they're doing. They get the final table and then they put it in the downstream processes, right? There are some scripts or reporting on top of it. So generally, if we give them, we, we say that OK, we were not able to create the tables in your exact CDM format. We were not able to create one table with column. So we create 2 with 50/50 columns. Then that will be probably useless for them.
+
+@Kishore Bandi [1:10:17]: Hm
+
+@Tanmay [1:10:18]: So yeah, then you
+
+@Kishore Bandi [1:10:18]: But the, the, the, my, my question is mainly for that only, do you want to retrofit only for this example, or have you spoken to other customers? How is it present? what is it that they are doing today, to maybe walk around it or like how does it work? Like, do you know, do you have an answer or because generally algorithm you can't build for something which is disjoint.
+
+@Kishore Bandi [1:10:40]: And if you, if you, if as a product, if you say no, that never exist, then we can think of even better solutions. All right? If you know that there's 100% going to be a mapping, we can, there's a deterministic problem to solve, we'll do it. But, we need that guarantee that all has odd product hasn't done the enough research.
+
+@Tanmay [1:10:57]: So, so from what I understand, I, I did not ask about the like or understand the exact use case of JPMCPCS yet. I, I'm not sure even product has a very good understanding of that, but from what Magik has in in mind in terms of this problem statement that the harmonic tool, is that we will have like, you know, the, the, the customer will always have like an exact CDM and the sources that they are providing will should match that exact CDM, like let's say whatever, like the CDM has 3 tables. One is the overall unified sales data. One is some person's data, etc. So whatever serum they define and the data they they bring in that that will.
+
+@Tanmay [1:11:37]: Map exactly onto the table, it's possible that there is some extra columns in the source table which we want to discard or there are some missing columns in the source which you want to put as null. That is possible, so, but yeah, so essentially like if we find some disjoint kind of thing, probably like we can just discard one of them and put the one which maps to the stadium and put the rest of the columns is not. So something like that. So, so most likely like from what my what you told me that the inputs
+
+@Tanmay [1:12:06]: Will contain the majority of the information required to create that output CDM data format.
+
+@Kishore Bandi [1:12:13]: I see. Got it, got it. So, a lot of these other use cases may not even exist then, like, what if it's not mapped properly and like what if we get a very disjoint? Data and all, correct?
+
+@Tanmay [1:12:24]: Right, I did, yeah, I, I think in that case it's like, OK, whatever data is not mapping to that, it is disjoint from the rest of the things that we are trying to do that is probably like some extra table that the user has put in the canvas, but is not required, so we do not even join that or we just ignore that, something like that.
+
+@Kishore Bandi [1:12:38]: Right, right, right, right. OK, OK, that, that is
+
+@Tanmay [1:12:39]: But Yeah
+
+@Kishore Bandi [1:12:42]: Good to know.
+
+@Tanmay [1:12:43]: Hm So, so, Kishore, like, tomorrow I have set up a call at about 10 to 11 I think, with, with just you and me and Magic. So would you want to talk about this logic because if I, talk about it then I'll definitely get, you know, like my cotton magic question like how does this work or something?
+
+@Kishore Bandi [1:12:55]: Yeah. Sure, sure. I don't have anything written up as such. but again, I can just talk over like yeah, what, what we're thinking.
+
+@Tanmay [1:13:11]: Yeah Yeah, this part I can just, let, let me see if, oh, I, I think only after the call I'll get the notes, but, but yeah like the that part we can probably just summarize and put it into the talk easily using cloud, but yeah, the explaining of the HK, etc. Ma particulars, the dead that part, if you can do that, putting into a dog, etc. I can take care of it.
+
+@Kishore Bandi [1:13:15]: Because.
+
+@Kishore Bandi [1:13:32]: Yes Yeah Sure, sure, sure, sure. I'll, I'll work, yeah.
+
+@Tanmay [1:13:38]: Yeah OK, OK
+
+@Kishore Bandi [1:13:39]: Talking. Mhm
+
+@Tanmay [1:13:41]: Could, could we have
+
+@Kishore Bandi [1:13:42]: All right, yeah
+
+@Tanmay [1:13:43]: Yeah, thanks, thanks, Michelle.
+
+@Kishore Bandi [1:13:44]: Well then maybe just take a nap like tomorrow morning, you can just see that the rough top system and we don't need a proper document as such.
+
+@Tanmay [1:13:50]: Yeah, yeah. OK
+
+@Kishore Bandi [1:13:52]: Mhm.
+
+@Tanmay [1:13:52]: All right. Thanks, Michelle. Bye
+
+@Kishore Bandi [1:13:52]: Cool. On the

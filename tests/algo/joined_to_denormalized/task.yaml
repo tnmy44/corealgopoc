@@ -1,0 +1,32 @@
+description: >
+  Past pipeline joined four normalized tables (students, majors, enrollments,
+  courses) with three LEFT JOINs, computed grade_points via a CASE expression,
+  and concatenated first/last names. Current source is a single denormalized
+  student_records table where all JOINs and computed columns are pre-materialized.
+  The algorithm must recognise that all JOINs, CONCAT, and CASE expressions are
+  unnecessary and map directly to flat columns.
+
+sources:
+  - name: student_records
+    file: sourcedata/student_records.csv
+    schema:
+      - { name: record_id, type: VARCHAR }
+      - { name: student_name, type: VARCHAR }
+      - { name: major, type: VARCHAR }
+      - { name: department, type: VARCHAR }
+      - { name: course_name, type: VARCHAR }
+      - { name: credits, type: INTEGER }
+      - { name: grade, type: VARCHAR }
+      - { name: grade_points, type: DECIMAL }
+      - { name: semester, type: VARCHAR }
+
+target:
+  table: academic_summary
+  columns:
+    - { name: student_name, type: VARCHAR, description: "Student full name" }
+    - { name: major, type: VARCHAR, description: "Major name" }
+    - { name: department, type: VARCHAR, description: "Department" }
+    - { name: course_name, type: VARCHAR, description: "Course title" }
+    - { name: credits, type: INTEGER, description: "Course credit hours" }
+    - { name: grade_points, type: DECIMAL, description: "Weighted grade points (GPA scale * credits)" }
+    - { name: semester, type: VARCHAR, description: "Academic semester" }

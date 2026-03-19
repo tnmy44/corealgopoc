@@ -1,0 +1,37 @@
+description: >
+  Two-table source with LEFT JOIN. Column names differ from current sources
+  (deal_value vs amount_cents, deal_grade vs risk_score, territory vs region_code),
+  but demonstrates how to join a primary table with a contacts/persons table using
+  an ID foreign key. Expressions are simple direct mappings with no business logic.
+  The algorithm should learn the join pattern from this pipeline.
+
+sources:
+  - name: deals
+    schema:
+      - { name: deal_id, type: VARCHAR }
+      - { name: contact_id, type: VARCHAR }
+      - { name: deal_value, type: DECIMAL }
+      - { name: deal_grade, type: VARCHAR }
+      - { name: territory, type: VARCHAR }
+  - name: contacts
+    schema:
+      - { name: contact_id, type: VARCHAR }
+      - { name: contact_name, type: VARCHAR }
+      - { name: contact_email, type: VARCHAR }
+
+target_columns:
+  loan_id:
+    source_columns: [deals.deal_id]
+    sql_file: sql/loan_id.sql
+  borrower_name:
+    source_columns: [contacts.contact_name]
+    sql_file: sql/borrower_name.sql
+  loan_amount_usd:
+    source_columns: [deals.deal_value]
+    sql_file: sql/loan_amount_usd.sql
+  risk_category:
+    source_columns: [deals.deal_grade]
+    sql_file: sql/risk_category.sql
+  region:
+    source_columns: [deals.territory]
+    sql_file: sql/region.sql

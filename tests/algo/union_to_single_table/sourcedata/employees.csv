@@ -1,0 +1,5 @@
+emp_id,name,pay_type,pay_rate,hours_per_week,dept
+E001,Alice Smith,salaried,72000,,Engineering
+E002,Bob Jones,salaried,84000,,Marketing
+E003,Charlie Brown,hourly,25.00,40,Engineering
+E004,Diana Prince,hourly,30.00,35,Marketing

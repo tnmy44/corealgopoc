@@ -1,0 +1,6 @@
+sale_id,person_name,amount,sale_type
+1,Alice,150.00,W
+2,Bob,89.99,O
+3,Charlie,210.50,R
+4,Diana,45.00,W
+5,Eve,320.75,O

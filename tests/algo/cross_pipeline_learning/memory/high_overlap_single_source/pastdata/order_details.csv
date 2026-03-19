@@ -1,0 +1,5 @@
+order_id,customer_first_name,customer_last_name,amount_cents,risk_score,region_code
+A001,Alice,Smith,50000,90,NY
+A002,Bob,Jones,25000,60,CA
+A003,Charlie,Brown,75000,30,TX
+A004,Diana,Prince,10000,75,OR

@@ -1,0 +1,7 @@
+movement_id,product_id,warehouse_id,quantity_change,movement_type,movement_date
+M001,P001,W01,100,receipt,2024-01-15
+M002,P001,W01,30,shipment,2024-02-10
+M003,P001,W02,50,receipt,2024-01-20
+M004,P002,W01,200,receipt,2024-01-12
+M005,P002,W01,80,shipment,2024-03-01
+M006,P001,W02,20,shipment,2024-03-15

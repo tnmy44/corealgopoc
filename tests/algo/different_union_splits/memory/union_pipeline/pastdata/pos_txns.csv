@@ -1,0 +1,4 @@
+txn_id,amount,txn_type
+POS-001,500.00,pos
+POS-002,1000.00,pos
+POS-003,750.00,pos

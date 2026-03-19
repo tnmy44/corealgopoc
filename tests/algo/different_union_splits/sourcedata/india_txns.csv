@@ -1,0 +1,4 @@
+txn_id,amount,txn_type
+IND-001,500.00,pos
+IND-002,300.00,online
+IND-003,750.00,pos

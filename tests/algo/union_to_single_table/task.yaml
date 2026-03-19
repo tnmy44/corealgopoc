@@ -1,0 +1,25 @@
+description: >
+  Past pipeline ingested from two separate tables (salaried_employees and
+  hourly_employees) via UNION ALL, with different pay computation expressions
+  per branch. Current source is a single unified employees table with a pay_type
+  discriminator column. The algorithm must collapse the UNION into a CASE WHEN
+  on the discriminator, translating per-branch expressions into conditional logic.
+
+sources:
+  - name: employees
+    file: sourcedata/employees.csv
+    schema:
+      - { name: emp_id, type: VARCHAR }
+      - { name: name, type: VARCHAR }
+      - { name: pay_type, type: VARCHAR }
+      - { name: pay_rate, type: DECIMAL }
+      - { name: hours_per_week, type: DECIMAL }
+      - { name: dept, type: VARCHAR }
+
+target:
+  table: payroll_summary
+  columns:
+    - { name: emp_id, type: VARCHAR, description: "Employee identifier" }
+    - { name: name, type: VARCHAR, description: "Employee name" }
+    - { name: monthly_pay, type: DECIMAL, description: "Monthly compensation" }
+    - { name: department, type: VARCHAR, description: "Department name" }

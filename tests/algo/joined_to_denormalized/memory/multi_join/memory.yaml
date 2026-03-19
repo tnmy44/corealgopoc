@@ -1,0 +1,53 @@
+description: >
+  Four normalized tables joined with three LEFT JOINs. Students joined to majors
+  for major name and department. Enrollments joined to courses for course name
+  and credits. Both sides joined on student_id. Full name concatenated from
+  first_name + last_name. Grade points computed via CASE on letter grade * credits.
+
+sources:
+  - name: students
+    schema:
+      - { name: student_id, type: VARCHAR }
+      - { name: first_name, type: VARCHAR }
+      - { name: last_name, type: VARCHAR }
+      - { name: major_id, type: VARCHAR }
+  - name: majors
+    schema:
+      - { name: major_id, type: VARCHAR }
+      - { name: major_name, type: VARCHAR }
+      - { name: department, type: VARCHAR }
+  - name: enrollments
+    schema:
+      - { name: enrollment_id, type: VARCHAR }
+      - { name: student_id, type: VARCHAR }
+      - { name: course_id, type: VARCHAR }
+      - { name: grade, type: VARCHAR }
+      - { name: semester, type: VARCHAR }
+  - name: courses
+    schema:
+      - { name: course_id, type: VARCHAR }
+      - { name: course_name, type: VARCHAR }
+      - { name: credits, type: INTEGER }
+
+target_columns:
+  student_name:
+    source_columns: [students.first_name, students.last_name]
+    sql_file: sql/student_name.sql
+  major:
+    source_columns: [majors.major_name]
+    sql_file: sql/major.sql
+  department:
+    source_columns: [majors.department]
+    sql_file: sql/department.sql
+  course_name:
+    source_columns: [courses.course_name]
+    sql_file: sql/course_name.sql
+  credits:
+    source_columns: [courses.credits]
+    sql_file: sql/credits.sql
+  grade_points:
+    source_columns: [enrollments.grade, courses.credits]
+    sql_file: sql/grade_points.sql
+  semester:
+    source_columns: [enrollments.semester]
+    sql_file: sql/semester.sql

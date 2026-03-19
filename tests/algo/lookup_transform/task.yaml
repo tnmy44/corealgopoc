@@ -1,0 +1,29 @@
+description: >
+  Past pipeline has a single flat table with sale_type (char codes W/R/O) and
+  derives the target column 'reference' via a simple CASE expression. Current
+  sources split the data: the main sales table lacks sale_type entirely, and a
+  separate lookup table channel_codes provides a numeric channel_code per sale.
+  The algorithm must discover that channel_code (integers 1/2/3) maps to the
+  same business meaning as sale_type (chars W/R/O) even though the column name,
+  data type, and literal values are completely different. The expected SQL JOINs
+  the lookup and applies a new CASE on channel_code to produce identical output.
+
+sources:
+  - name: sales
+    file: sourcedata/sales.csv
+    schema:
+      - { name: sale_id, type: INTEGER }
+      - { name: person_name, type: VARCHAR }
+      - { name: amount, type: DECIMAL }
+  - name: channel_codes
+    file: sourcedata/channel_codes.csv
+    schema:
+      - { name: sale_id, type: INTEGER }
+      - { name: channel_code, type: INTEGER }
+
+target:
+  table: sale_summary
+  columns:
+    - { name: sale_id, type: INTEGER, description: "Unique sale identifier" }
+    - { name: person_name, type: VARCHAR, description: "Buyer name" }
+    - { name: reference, type: VARCHAR, description: "Sales channel label derived from source codes" }

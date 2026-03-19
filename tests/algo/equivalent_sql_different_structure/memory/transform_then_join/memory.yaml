@@ -1,0 +1,44 @@
+description: >
+  Computes derived columns first (total_price, sale_year) in a CTE on the sales
+  table alone, then joins products and customers incrementally.
+  CTE order: sales_computed (expressions) -> with_products (JOIN) -> with_customers (JOIN).
+
+sources:
+  - name: sales
+    schema:
+      - { name: sale_id, type: VARCHAR }
+      - { name: product_id, type: VARCHAR }
+      - { name: customer_id, type: VARCHAR }
+      - { name: quantity, type: INTEGER }
+      - { name: unit_price, type: DECIMAL }
+      - { name: sale_date, type: VARCHAR }
+  - name: products
+    schema:
+      - { name: product_id, type: VARCHAR }
+      - { name: product_name, type: VARCHAR }
+      - { name: category, type: VARCHAR }
+  - name: customers
+    schema:
+      - { name: customer_id, type: VARCHAR }
+      - { name: customer_name, type: VARCHAR }
+      - { name: region, type: VARCHAR }
+
+target_columns:
+  sale_id:
+    source_columns: [sales.sale_id]
+    sql_file: sql/sale_id.sql
+  customer_name:
+    source_columns: [customers.customer_name]
+    sql_file: sql/customer_name.sql
+  product_category:
+    source_columns: [products.category]
+    sql_file: sql/product_category.sql
+  total_price:
+    source_columns: [sales.quantity, sales.unit_price]
+    sql_file: sql/total_price.sql
+  sale_year:
+    source_columns: [sales.sale_date]
+    sql_file: sql/sale_year.sql
+  region:
+    source_columns: [customers.region]
+    sql_file: sql/region.sql

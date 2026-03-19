@@ -1,0 +1,231 @@
+description: >
+  Star schema with 4 source tables joined on STUDY_ID. dsopi and srt tables
+  provide overlapping operational columns merged via COALESCE (srt priority).
+  cv_study_data provides project plan metrics. Portfolio provides business group.
+  Four CTEs transform each source, then a final CTE INNER JOINs all four.
+
+sources:
+  - name: dsopi_st_cln_study_operational
+    schema:
+      - { name: STUDY_ID, type: VARCHAR }
+      - { name: BSC_CRITICAL_PATH_STUDY_FLG, type: VARCHAR }
+      - { name: COMMI_ADJUDICATION_USED, type: VARCHAR }
+      - { name: COMMI_DMC_USED, type: VARCHAR }
+      - { name: COMMI_NONE_USED, type: VARCHAR }
+      - { name: CONTACT_CARD_PROVIDER, type: VARCHAR }
+      - { name: CPOC_COMPLETION_PERCNTG, type: DOUBLE }
+      - { name: EU_APPROVED_PRODUCT, type: VARCHAR }
+      - { name: IQMP_REQUIREMENT_FLAG, type: VARCHAR }
+      - { name: GLOBAL_TRIAL_PLACEMENT, type: VARCHAR }
+      - { name: IB_VERSION_DATE, type: TIMESTAMP }
+      - { name: PMV_MAX_INTERVAL, type: BIGINT }
+      - { name: PAPER_STUDY_FLG, type: VARCHAR }
+      - { name: PATIENT_DATABASE, type: VARCHAR }
+      - { name: PIMS_FLG, type: VARCHAR }
+      - { name: TOT_SUBJ_PLANNED_STUDY, type: BIGINT }
+      - { name: RAP_RCPMS_FLG, type: VARCHAR }
+      - { name: RCPMS_FLAG, type: VARCHAR }
+      - { name: RECRUITMENT_COUNTRY, type: VARCHAR }
+      - { name: RECRUITMENT_DESIGN_TYPE, type: VARCHAR }
+      - { name: RECRUITMENT_DESIGN_VERSION, type: VARCHAR }
+      - { name: RECRUITMENT_METHOD, type: VARCHAR }
+      - { name: RECRUITMENT_START_DATE, type: DATE }
+      - { name: RFSSMI_FLAG, type: VARCHAR }
+      - { name: SUBJECTS_RECRUITED_TYPE, type: VARCHAR }
+      - { name: SUBJ_TARGET_COMPLETERS_NUM, type: BIGINT }
+      - { name: TMF_REQUIREMENT_FLG, type: VARCHAR }
+      - { name: DELETE_FLAG, type: VARCHAR }
+  - name: srt_study
+    schema:
+      - { name: STUDY_ID, type: VARCHAR }
+      - { name: COMMITTEE_ADJUDICATION_USED, type: VARCHAR }
+      - { name: COMMITTEE_DMC_USED, type: VARCHAR }
+      - { name: COMMITTEE_NONE_USED, type: VARCHAR }
+      - { name: EU_APPROVED_PRODUCT, type: VARCHAR }
+      - { name: IB_VERSION_DT, type: TIMESTAMP }
+      - { name: PAPER_STUDY, type: VARCHAR }
+      - { name: PATIENT_DATABASE, type: VARCHAR }
+      - { name: TOT_SUBJ_PLANNED_STUDY, type: BIGINT }
+      - { name: PRIMARY_DATA_COLLECTION, type: VARCHAR }
+      - { name: SECONDARY_DATA_COLLECTION, type: VARCHAR }
+      - { name: SUBJECTS_RECRUITED_TYPE, type: VARCHAR }
+      - { name: SUBJ_TARGET_COMPLETERS_NUM, type: BIGINT }
+      - { name: DATA_RETURN_PLAN_COMPLETE_FLAG, type: VARCHAR }
+      - { name: PARTICIPANT_DATA_WITHHELD_UNTIL_LSLV_FLAG, type: VARCHAR }
+      - { name: PARTICIPANT_ELIGIBLE_TO_RETURN_FLAG, type: VARCHAR }
+      - { name: DELETE_FLAG, type: VARCHAR }
+  - name: cv_study_data
+    schema:
+      - { name: STUDY_ID, type: VARCHAR }
+      - { name: STUDY_BUSINESS_RATIONALE_CATEGORY, type: VARCHAR }
+      - { name: STUDY_MED_RESPONSIBILTY, type: VARCHAR }
+      - { name: STUDY_PROJECT_PLAN_FINANCE_TYP, type: VARCHAR }
+      - { name: STUDY_SAP_FINISH_DATE, type: TIMESTAMP }
+      - { name: STUDY_PCNT_COMP_SAP, type: BIGINT }
+      - { name: STUDY_SAP_START_DATE, type: TIMESTAMP }
+      - { name: STUDY_CPM, type: VARCHAR }
+      - { name: STUDY_EXECUTION_STATE, type: VARCHAR }
+      - { name: STUDY_PERFORMING_SITE, type: VARCHAR }
+      - { name: STUDY_PROJECT_PLAN_NAME, type: VARCHAR }
+      - { name: STUDY_PROJECT_PLAN_TEMPLATE_NAME, type: VARCHAR }
+      - { name: STUDY_STATUS_PLAN, type: VARCHAR }
+  - name: dsopi_st_cln_study_portfolio
+    schema:
+      - { name: STUDY_ID, type: VARCHAR }
+      - { name: BUSINESS_GROUP, type: VARCHAR }
+      - { name: CCS_CLINICAL_PLACEMENT, type: VARCHAR }
+
+target_columns:
+  STUDY_ID:
+    source_columns: [dsopi_st_cln_study_operational.STUDY_ID, srt_study.STUDY_ID, cv_study_data.STUDY_ID, dsopi_st_cln_study_portfolio.STUDY_ID]
+    sql_file: sql/study_id.sql
+  BSC_CRITICALPATH_STUDY:
+    source_columns: [dsopi_st_cln_study_operational.BSC_CRITICAL_PATH_STUDY_FLG]
+    sql_file: sql/bsc_criticalpath_study.sql
+  CONTACT_CARD_PROVIDER:
+    source_columns: [dsopi_st_cln_study_operational.CONTACT_CARD_PROVIDER]
+    sql_file: sql/contact_card_provider.sql
+  CPOC_COMPLETION_PERCENTAGE:
+    source_columns: [dsopi_st_cln_study_operational.CPOC_COMPLETION_PERCNTG]
+    sql_file: sql/cpoc_completion_percentage.sql
+  FULL_IQMP_REQUIRED:
+    source_columns: [dsopi_st_cln_study_operational.IQMP_REQUIREMENT_FLAG]
+    sql_file: sql/full_iqmp_required.sql
+  GLOBAL_TRIAL_PLACEMENT:
+    source_columns: [dsopi_st_cln_study_operational.GLOBAL_TRIAL_PLACEMENT]
+    sql_file: sql/global_trial_placement.sql
+  MONITOR_VISIT_PLAN_INTERVAL_MAX:
+    source_columns: [dsopi_st_cln_study_operational.PMV_MAX_INTERVAL]
+    sql_file: sql/monitor_visit_plan_interval_max.sql
+  PIMS_FLG:
+    source_columns: [dsopi_st_cln_study_operational.PIMS_FLG]
+    sql_file: sql/pims_flg.sql
+  RAP_RCPMS_FLAG:
+    source_columns: [dsopi_st_cln_study_operational.RAP_RCPMS_FLG]
+    sql_file: sql/rap_rcpms_flag.sql
+  RCPMS_FLAG:
+    source_columns: [dsopi_st_cln_study_operational.RCPMS_FLAG]
+    sql_file: sql/rcpms_flag.sql
+  RECRUITMENT_COUNTRY:
+    source_columns: [dsopi_st_cln_study_operational.RECRUITMENT_COUNTRY]
+    sql_file: sql/recruitment_country.sql
+  RECRUITMENT_DESIGN_TYPE:
+    source_columns: [dsopi_st_cln_study_operational.RECRUITMENT_DESIGN_TYPE]
+    sql_file: sql/recruitment_design_type.sql
+  RECRUITMENT_DESIGN_VERSION:
+    source_columns: [dsopi_st_cln_study_operational.RECRUITMENT_DESIGN_VERSION]
+    sql_file: sql/recruitment_design_version.sql
+  RECRUITMENT_METHOD:
+    source_columns: [dsopi_st_cln_study_operational.RECRUITMENT_METHOD]
+    sql_file: sql/recruitment_method.sql
+  RECRUITMENT_START_DATE:
+    source_columns: [dsopi_st_cln_study_operational.RECRUITMENT_START_DATE]
+    sql_file: sql/recruitment_start_date.sql
+  RFSSMI_FLAG:
+    source_columns: [dsopi_st_cln_study_operational.RFSSMI_FLAG]
+    sql_file: sql/rfssmi_flag.sql
+  TMF_REQUIREMENT_FLAG:
+    source_columns: [dsopi_st_cln_study_operational.TMF_REQUIREMENT_FLG]
+    sql_file: sql/tmf_requirement_flag.sql
+  COMMITTEE_ADJUDICATION_USED:
+    source_columns: [srt_study.COMMITTEE_ADJUDICATION_USED, dsopi_st_cln_study_operational.COMMI_ADJUDICATION_USED]
+    sql_file: sql/committee_adjudication_used.sql
+  COMMITTEE_DMC_USED:
+    source_columns: [srt_study.COMMITTEE_DMC_USED, dsopi_st_cln_study_operational.COMMI_DMC_USED]
+    sql_file: sql/committee_dmc_used.sql
+  COMMITTEE_NONE_USED:
+    source_columns: [srt_study.COMMITTEE_NONE_USED, dsopi_st_cln_study_operational.COMMI_NONE_USED]
+    sql_file: sql/committee_none_used.sql
+  EU_APPROVED_PRODUCT:
+    source_columns: [srt_study.EU_APPROVED_PRODUCT, dsopi_st_cln_study_operational.EU_APPROVED_PRODUCT]
+    sql_file: sql/eu_approved_product.sql
+  IB_VERSION_DT:
+    source_columns: [srt_study.IB_VERSION_DT, dsopi_st_cln_study_operational.IB_VERSION_DATE]
+    sql_file: sql/ib_version_dt.sql
+  PAPER_STUDY:
+    source_columns: [srt_study.PAPER_STUDY, dsopi_st_cln_study_operational.PAPER_STUDY_FLG]
+    sql_file: sql/paper_study.sql
+  PATIENT_DATABASE:
+    source_columns: [srt_study.PATIENT_DATABASE, dsopi_st_cln_study_operational.PATIENT_DATABASE]
+    sql_file: sql/patient_database.sql
+  SUBJECTS_RECRUITED_TYPE:
+    source_columns: [srt_study.SUBJECTS_RECRUITED_TYPE, dsopi_st_cln_study_operational.SUBJECTS_RECRUITED_TYPE]
+    sql_file: sql/subjects_recruited_type.sql
+  TARGET_COMPLETE_NUMBER:
+    source_columns: [srt_study.SUBJ_TARGET_COMPLETERS_NUM, dsopi_st_cln_study_operational.SUBJ_TARGET_COMPLETERS_NUM]
+    sql_file: sql/target_complete_number.sql
+  PLANNED_PATIENTS:
+    source_columns: [srt_study.TOT_SUBJ_PLANNED_STUDY, dsopi_st_cln_study_operational.TOT_SUBJ_PLANNED_STUDY]
+    sql_file: sql/planned_patients.sql
+  PLANNED_PATIENTS_SOURCE:
+    source_columns: [srt_study.TOT_SUBJ_PLANNED_STUDY, dsopi_st_cln_study_operational.TOT_SUBJ_PLANNED_STUDY]
+    sql_file: sql/planned_patients_source.sql
+  PRIMARY_DATA_COLLECTION:
+    source_columns: [srt_study.PRIMARY_DATA_COLLECTION]
+    sql_file: sql/primary_data_collection.sql
+  SECONDARY_DATA_COLLECTION:
+    source_columns: [srt_study.SECONDARY_DATA_COLLECTION]
+    sql_file: sql/secondary_data_collection.sql
+  DATA_RETURN_PLAN_COMPLETE_FLAG:
+    source_columns: [srt_study.DATA_RETURN_PLAN_COMPLETE_FLAG]
+    sql_file: sql/data_return_plan_complete_flag.sql
+  PARTICIPANT_DATA_WITHHELD_UNTIL_LSLV_FLAG:
+    source_columns: [srt_study.PARTICIPANT_DATA_WITHHELD_UNTIL_LSLV_FLAG]
+    sql_file: sql/participant_data_withheld_until_lslv_flag.sql
+  PARTICIPANT_ELIGIBLE_TO_RETURN_FLAG:
+    source_columns: [srt_study.PARTICIPANT_ELIGIBLE_TO_RETURN_FLAG]
+    sql_file: sql/participant_eligible_to_return_flag.sql
+  BUSINESS_RATIONALE:
+    source_columns: [cv_study_data.STUDY_BUSINESS_RATIONALE_CATEGORY]
+    sql_file: sql/business_rationale.sql
+  MEDICAL_RESPONSIBILITY:
+    source_columns: [cv_study_data.STUDY_MED_RESPONSIBILTY]
+    sql_file: sql/medical_responsibility.sql
+  PROJECT_PLAN_TYPE:
+    source_columns: [cv_study_data.STUDY_PROJECT_PLAN_FINANCE_TYP]
+    sql_file: sql/project_plan_type.sql
+  SAP_FINISH_DATE:
+    source_columns: [cv_study_data.STUDY_SAP_FINISH_DATE]
+    sql_file: sql/sap_finish_date.sql
+  SAP_PCT_COMPLETED:
+    source_columns: [cv_study_data.STUDY_PCNT_COMP_SAP]
+    sql_file: sql/sap_pct_completed.sql
+  SAP_START_DATE:
+    source_columns: [cv_study_data.STUDY_SAP_START_DATE]
+    sql_file: sql/sap_start_date.sql
+  STUDY_CPM:
+    source_columns: [cv_study_data.STUDY_CPM]
+    sql_file: sql/study_cpm.sql
+  STUDY_EXECUTION_STATE:
+    source_columns: [cv_study_data.STUDY_EXECUTION_STATE]
+    sql_file: sql/study_execution_state.sql
+  STUDY_PERFORMING_SITE:
+    source_columns: [cv_study_data.STUDY_PERFORMING_SITE]
+    sql_file: sql/study_performing_site.sql
+  STUDY_PROJECT_PLAN_NAME:
+    source_columns: [cv_study_data.STUDY_PROJECT_PLAN_NAME]
+    sql_file: sql/study_project_plan_name.sql
+  STUDY_PROJECT_PLAN_TEMPLATE_NAME:
+    source_columns: [cv_study_data.STUDY_PROJECT_PLAN_TEMPLATE_NAME]
+    sql_file: sql/study_project_plan_template_name.sql
+  STUDY_STATUS_PLAN:
+    source_columns: [cv_study_data.STUDY_STATUS_PLAN]
+    sql_file: sql/study_status_plan.sql
+  BUSINESS_GROUP:
+    source_columns: [dsopi_st_cln_study_portfolio.BUSINESS_GROUP]
+    sql_file: sql/business_group.sql
+  CCS_CLINICAL_PLACEMENT:
+    source_columns: [dsopi_st_cln_study_portfolio.CCS_CLINICAL_PLACEMENT]
+    sql_file: sql/ccs_clinical_placement.sql
+  DELETE_FLAG:
+    source_columns: [srt_study.DELETE_FLAG, dsopi_st_cln_study_operational.DELETE_FLAG]
+    sql_file: sql/delete_flag.sql
+  START_DT:
+    source_columns: []
+    sql_file: sql/start_dt.sql
+  END_DT:
+    source_columns: []
+    sql_file: sql/end_dt.sql
+  LOAD_DATE:
+    source_columns: []
+    sql_file: sql/load_date.sql

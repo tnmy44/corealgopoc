@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SQL DAG Viewer</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/reactflow@11.11.4/dist/umd/index.js" crossorigin></script>
+  <script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
+  <link href="https://unpkg.com/reactflow@11.11.4/dist/style.css" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f6f8fa; color: #1f2328; }
+
+    .app-layout { display: flex; height: 100vh; }
+
+    /* Sidebar */
+    .sidebar { width: 240px; min-width: 240px; background: #ffffff; border-right: 1px solid #d0d7de; overflow-y: auto; padding: 16px 0; }
+    .sidebar h2 { padding: 0 16px 12px; font-size: 14px; color: #656d76; text-transform: uppercase; letter-spacing: 0.5px; }
+    .sidebar-item { padding: 10px 16px; cursor: pointer; border-left: 3px solid transparent; font-size: 13px; transition: all 0.15s; color: #1f2328; }
+    .sidebar-item:hover { background: #f6f8fa; }
+    .sidebar-item.active { background: #ddf4ff; border-left-color: #0969da; color: #0969da; font-weight: 600; }
+
+    /* Main content */
+    .main-content { flex: 1; overflow-y: auto; padding: 24px; }
+    .main-content h1 { font-size: 20px; margin-bottom: 4px; color: #1f2328; }
+    .description { color: #656d76; font-size: 13px; margin-bottom: 20px; line-height: 1.5; }
+
+    /* Section cards */
+    .section { background: #ffffff; border: 1px solid #d0d7de; border-radius: 8px; margin-bottom: 16px; }
+    .section-header { padding: 12px 16px; border-bottom: 1px solid #d0d7de; display: flex; align-items: center; justify-content: space-between; background: #f6f8fa; border-radius: 8px 8px 0 0; }
+    .section-header h3 { font-size: 14px; font-weight: 600; color: #1f2328; }
+    .section-body { padding: 16px; }
+
+    /* Data tables */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: 'SF Mono', 'Fira Code', monospace; }
+    .data-table th { background: #f6f8fa; padding: 6px 10px; text-align: left; color: #656d76; font-weight: 600; border-bottom: 2px solid #d0d7de; }
+    .data-table td { padding: 6px 10px; border-bottom: 1px solid #eaeef2; color: #1f2328; }
+    .data-table tr:hover td { background: #f6f8fa; }
+
+    /* Tables side by side */
+    .tables-row { display: flex; gap: 16px; flex-wrap: wrap; }
+    .tables-row .table-card { flex: 1; min-width: 250px; }
+    .table-card h4 { font-size: 12px; color: #656d76; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.3px; }
+
+    /* Pipeline cards */
+    .pipelines-grid { display: flex; gap: 16px; flex-wrap: wrap; }
+    .pipeline-card { flex: 1; min-width: 400px; background: #ffffff; border: 1px solid #d0d7de; border-radius: 6px; display: flex; flex-direction: column; }
+    .pipeline-card-header { padding: 10px 14px; border-bottom: 1px solid #d0d7de; display: flex; align-items: center; gap: 10px; background: #f6f8fa; border-radius: 6px 6px 0 0; flex-wrap: wrap; }
+    .pipeline-card-header h4 { font-size: 13px; font-weight: 600; color: #1f2328; }
+    .pipeline-card-header .header-controls { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+    .pipeline-card-body { position: relative; overflow: hidden; }
+
+    /* Column selector pills */
+    .col-selector { display: flex; gap: 4px; flex-wrap: wrap; }
+    .col-pill { padding: 2px 10px; font-size: 11px; cursor: pointer; border: 1px solid #d0d7de; border-radius: 12px; background: #ffffff; color: #656d76; transition: all 0.15s; font-family: 'SF Mono', monospace; white-space: nowrap; }
+    .col-pill:hover { border-color: #8c959f; color: #1f2328; }
+    .col-pill.active { background: #ddf4ff; border-color: #0969da; color: #0969da; font-weight: 600; }
+
+    /* Toggle buttons */
+    .toggle-group { display: flex; background: #eaeef2; border-radius: 4px; overflow: hidden; }
+    .toggle-btn { padding: 4px 12px; font-size: 11px; cursor: pointer; border: none; background: transparent; color: #656d76; transition: all 0.15s; font-weight: 500; }
+    .toggle-btn.active { background: #ffffff; color: #1f2328; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+
+    /* SQL display */
+    .sql-display { background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 4px; padding: 12px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; line-height: 1.6; white-space: pre-wrap; overflow-x: auto; color: #1f2328; overflow-y: auto; }
+    .sql-keyword { color: #cf222e; font-weight: 600; }
+    .sql-function { color: #8250df; }
+    .sql-string { color: #0a3069; }
+    .sql-comment { color: #6e7781; font-style: italic; }
+
+    .btn { padding: 4px 12px; background: #ffffff; border: 1px solid #d0d7de; color: #1f2328; border-radius: 4px; cursor: pointer; font-size: 12px; transition: all 0.15s; }
+    .btn:hover { background: #f6f8fa; border-color: #8c959f; }
+
+    /* Custom React Flow nodes */
+    .sql-node { padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 500; border: 2px solid; min-width: 100px; text-align: center; cursor: pointer; transition: box-shadow 0.15s; }
+    .sql-node:hover { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); }
+    .sql-node .node-type { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; margin-bottom: 2px; }
+    .sql-node .node-label { font-size: 12px; font-weight: 600; }
+    .sql-node .node-schema { font-size: 9px; color: #656d76; margin-top: 4px; font-family: 'SF Mono', monospace; text-align: left; line-height: 1.4; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 4px; }
+    .sql-node .node-schema .schema-col { white-space: nowrap; }
+    .sql-node.source { background: #dafbe1; border-color: #1a7f37; color: #1a7f37; }
+    .sql-node.cte { background: #fbefff; border-color: #8250df; color: #8250df; }
+    .sql-node.output { background: #ddf4ff; border-color: #0969da; color: #0969da; }
+
+    /* Operation badges */
+    .op-badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 600; margin-top: 3px; }
+    .op-SOURCE { background: #1a7f37; color: #fff; }
+    .op-SELECT { background: #0969da; color: #fff; }
+    .op-JOIN, .op-LEFT_JOIN { background: #8250df; color: #fff; }
+    .op-GROUP_BY { background: #bf8700; color: #fff; }
+    .op-FILTER { background: #cf222e; color: #fff; }
+    .op-UNION { background: #1a7f37; color: #fff; }
+    .op-SQL { background: #57606a; color: #fff; }
+
+    /* SQL tooltip on hover */
+    .sql-node { position: relative; }
+    .sql-tooltip { display: none; position: absolute; left: 50%; top: 100%; transform: translateX(-50%); margin-top: 8px; background: #1f2328; color: #e6edf3; padding: 10px 12px; border-radius: 6px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; line-height: 1.5; white-space: pre-wrap; max-width: 420px; max-height: 480px; overflow: auto; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.25); pointer-events: none; }
+    .sql-node:hover .sql-tooltip { display: block; }
+
+    /* Modal / Popup for node data */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal { background: #ffffff; border: 1px solid #d0d7de; border-radius: 8px; width: 80%; max-width: 800px; max-height: 80vh; overflow: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+    .modal-header { padding: 14px 16px; border-bottom: 1px solid #d0d7de; display: flex; align-items: center; justify-content: space-between; background: #f6f8fa; border-radius: 8px 8px 0 0; }
+    .modal-header h3 { font-size: 14px; font-weight: 600; }
+    .modal-body { padding: 16px; }
+    .modal-section { margin-bottom: 12px; }
+    .modal-section:last-child { margin-bottom: 0; }
+    .modal-section h4 { font-size: 11px; color: #656d76; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+
+    /* Target schema */
+    .schema-table { width: 100%; }
+    .schema-table th, .schema-table td { padding: 4px 10px; font-size: 12px; }
+
+    /* Resize handle */
+    .resize-handle { height: 6px; cursor: ns-resize; background: transparent; border-top: 1px solid #d0d7de; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+    .resize-handle:hover, .resize-handle.active { background: #ddf4ff; }
+    .resize-handle::after { content: ''; display: block; width: 30px; height: 2px; background: #8c959f; border-radius: 1px; }
+
+    /* React Flow overrides */
+    .react-flow__background { background: #ffffff !important; }
+    .react-flow__edge-path { stroke: #8c959f !important; stroke-width: 2px; }
+    .react-flow__edge-path:hover { stroke: #0969da !important; }
+    .react-flow__attribution { display: none !important; }
+    .react-flow__controls { border: 1px solid #d0d7de !important; border-radius: 4px !important; box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important; }
+    .react-flow__controls-button { background: #ffffff !important; border-bottom: 1px solid #d0d7de !important; fill: #656d76 !important; }
+    .react-flow__controls-button:hover { background: #f6f8fa !important; }
+
+    /* Loading / empty states */
+    .empty-state { text-align: center; padding: 40px; color: #656d76; }
+    .loading { color: #656d76; font-size: 13px; padding: 20px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" data-type="module">
+    const { useState, useEffect, useCallback, useRef } = React;
+    const { ReactFlow, Background, Controls, Handle, Position, MarkerType, ReactFlowProvider } = window.ReactFlow || {};
+
+    // ─── Helpers ───────────────────────────────────────────────────────────────
+
+    function highlightSQL(sql) {
+      if (!sql) return '';
+      const keywords = /\b(SELECT|FROM|WHERE|JOIN|LEFT|RIGHT|INNER|OUTER|ON|AS|AND|OR|NOT|IN|IS|NULL|WITH|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|GROUP|BY|ORDER|HAVING|LIMIT|UNION|ALL|DISTINCT|CASE|WHEN|THEN|ELSE|END|BETWEEN|LIKE|EXISTS|INTO|VALUES|SET|TABLE|INDEX|VIEW|IF|BEGIN|COMMIT|ROLLBACK)\b/gi;
+      const functions = /\b(CONCAT|TRIM|CAST|COALESCE|COUNT|SUM|AVG|MIN|MAX|UPPER|LOWER|SUBSTRING|REPLACE|LENGTH|ROUND|ABS|NOW|DATE|strptime)\b/gi;
+      const strings = /('[^']*')/g;
+      const comments = /(--[^\n]*)/g;
+      return sql
+        .replace(comments, '<span class="sql-comment">$1</span>')
+        .replace(strings, '<span class="sql-string">$1</span>')
+        .replace(functions, '<span class="sql-function">$&</span>')
+        .replace(keywords, '<span class="sql-keyword">$&</span>');
+    }
+
+    // ─── Dagre Layout ─────────────────────────────────────────────────────────
+
+    function getLayoutedElements(nodes, edges, schemas) {
+      const g = new dagre.graphlib.Graph();
+      g.setDefaultEdgeLabel(() => ({}));
+      g.setGraph({ rankdir: 'LR', nodesep: 40, ranksep: 100 });
+
+      nodes.forEach(node => {
+        const schemaCols = schemas && schemas[node.id];
+        const nodeWidth = 160;
+        const nodeHeight = schemaCols ? 70 + schemaCols.length * 14 : 70;
+        g.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+      });
+      edges.forEach(edge => {
+        g.setEdge(edge.source, edge.target);
+      });
+
+      dagre.layout(g);
+
+      const layoutedNodes = nodes.map(node => {
+        const dim = g.node(node.id);
+        return { ...node, position: { x: dim.x - dim.width / 2, y: dim.y - dim.height / 2 } };
+      });
+
+      return { nodes: layoutedNodes, edges };
+    }
+
+    // ─── Custom Node Component ────────────────────────────────────────────────
+
+    function SqlNode({ id, data }) {
+      const typeClass = data.nodeType || 'output';
+      const schema = data.nodeSchemas && data.nodeSchemas[id];
+      const opLabel = data.operation === 'SQL' ? 'SQL Statement' : (data.operation || '');
+      return React.createElement('div', {
+        className: `sql-node ${typeClass}`,
+        onClick: () => data.onNodeClick && data.onNodeClick({ ...data, nodeId: id })
+      },
+        React.createElement(Handle, { type: 'target', position: Position.Left, id: `${id}-target`, style: { background: '#8c959f', width: 8, height: 8 } }),
+        React.createElement('div', { className: 'node-type' }, opLabel),
+        React.createElement('div', { className: 'node-label' }, data.label || ''),
+        data.operation && React.createElement('span', { className: `op-badge op-${data.operation}` }, opLabel),
+        schema && React.createElement('div', { className: 'node-schema' },
+          schema.map((col, i) => React.createElement('div', { key: i, className: 'schema-col' }, col))
+        ),
+        data.sql && React.createElement('div', { className: 'sql-tooltip' }, data.sql),
+        React.createElement(Handle, { type: 'source', position: Position.Right, id: `${id}-source`, style: { background: '#8c959f', width: 8, height: 8 } })
+      );
+    }
+
+    const nodeTypes = { sqlNode: SqlNode };
+
+    // ─── Node Data Popup ──────────────────────────────────────────────────────
+
+    function NodeDataPopup({ nodeData, result, loading, onClose }) {
+      return React.createElement('div', { className: 'modal-overlay', onClick: (e) => { if (e.target === e.currentTarget) onClose(); } },
+        React.createElement('div', { className: 'modal' },
+          React.createElement('div', { className: 'modal-header' },
+            React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+              React.createElement('h3', null, nodeData.label),
+              React.createElement('span', { className: `op-badge op-${nodeData.operation}` }, nodeData.operation)
+            ),
+            React.createElement('button', { className: 'btn', onClick: onClose }, 'Close')
+          ),
+          React.createElement('div', { className: 'modal-body' },
+            React.createElement('div', { className: 'modal-section' },
+              React.createElement('h4', null, 'SQL'),
+              React.createElement(SQLCodeBlock, { sql: nodeData.executableSql, maxHeight: 150 })
+            ),
+            React.createElement('div', { className: 'modal-section' },
+              React.createElement('h4', null, 'Output Data'),
+              loading
+                ? React.createElement('div', { className: 'loading' }, 'Executing query...')
+                : result && result.error
+                  ? React.createElement('div', { style: { color: '#cf222e', fontSize: 12, padding: 8 } }, result.error)
+                  : result
+                    ? React.createElement(DataTable, { columns: result.columns, rows: result.rows, maxHeight: 300 })
+                    : null
+            )
+          )
+        )
+      );
+    }
+
+    // ─── DAG Panel Component ──────────────────────────────────────────────────
+
+    function DAGPanel({ dag, onNodeClick, height, nodeSchemas }) {
+      const panelHeight = height || 480;
+      const schemas = nodeSchemas || {};
+
+      if (!dag || !dag.nodes || dag.nodes.length === 0) {
+        return React.createElement('div', { className: 'empty-state', style: { height: panelHeight } }, 'No DAG data');
+      }
+
+      const flowNodes = dag.nodes.map(n => ({
+        id: n.id,
+        type: 'sqlNode',
+        data: {
+          label: n.label,
+          nodeType: n.node_type,
+          operation: n.operation,
+          sql: n.sql,
+          executableSql: n.executable_sql,
+          onNodeClick: onNodeClick,
+          nodeSchemas: schemas,
+        },
+        position: { x: 0, y: 0 },
+      }));
+
+      const flowEdges = dag.edges.map((e, i) => ({
+        id: `e-${e.source}-${e.target}-${i}`,
+        source: e.source,
+        target: e.target,
+        sourceHandle: `${e.source}-source`,
+        targetHandle: `${e.target}-target`,
+        type: 'smoothstep',
+        animated: false,
+        style: { stroke: '#8c959f', strokeWidth: 2 },
+        markerEnd: { type: MarkerType.ArrowClosed, color: '#8c959f' },
+      }));
+
+      const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(flowNodes, flowEdges, schemas);
+
+      return React.createElement('div', { style: { height: panelHeight } },
+        React.createElement(ReactFlowProvider, null,
+          React.createElement(ReactFlow, {
+            nodes: layoutedNodes,
+            edges: layoutedEdges,
+            nodeTypes: nodeTypes,
+            fitView: true,
+            fitViewOptions: { padding: 0.3 },
+            nodesDraggable: true,
+            nodesConnectable: false,
+            elementsSelectable: true,
+            minZoom: 0.3,
+            maxZoom: 2,
+            proOptions: { hideAttribution: true },
+          },
+            React.createElement(Background, { color: '#eaeef2', gap: 16 }),
+            React.createElement(Controls, { showInteractive: false })
+          )
+        )
+      );
+    }
+
+    // ─── Data Table Component ─────────────────────────────────────────────────
+
+    function DataTable({ columns, rows, maxHeight }) {
+      if (!columns || columns.length === 0) return React.createElement('div', { className: 'empty-state' }, 'No data');
+      return React.createElement('div', { style: { maxHeight: maxHeight || 200, overflowY: 'auto', overflowX: 'auto' } },
+        React.createElement('table', { className: 'data-table' },
+          React.createElement('thead', null,
+            React.createElement('tr', null,
+              columns.map((col, i) => React.createElement('th', { key: i }, col))
+            )
+          ),
+          React.createElement('tbody', null,
+            rows.map((row, ri) =>
+              React.createElement('tr', { key: ri },
+                row.map((val, ci) => React.createElement('td', { key: ci }, val === null ? React.createElement('em', { style: { color: '#8c959f' } }, 'NULL') : String(val)))
+              )
+            )
+          )
+        )
+      );
+    }
+
+    // ─── SQL Code Block ───────────────────────────────────────────────────────
+
+    function SQLCodeBlock({ sql, maxHeight }) {
+      return React.createElement('div', {
+        className: 'sql-display',
+        style: maxHeight ? { maxHeight } : {},
+        dangerouslySetInnerHTML: { __html: highlightSQL(sql || '') }
+      });
+    }
+
+    // ─── Resize Handle ────────────────────────────────────────────────────────
+
+    function useResize(initialHeight) {
+      const [height, setHeight] = useState(initialHeight);
+      const dragging = useRef(false);
+      const startY = useRef(0);
+      const startH = useRef(0);
+
+      const onMouseDown = useCallback((e) => {
+        e.preventDefault();
+        dragging.current = true;
+        startY.current = e.clientY;
+        startH.current = height;
+
+        const onMouseMove = (e) => {
+          if (!dragging.current) return;
+          const delta = e.clientY - startY.current;
+          setHeight(Math.max(150, startH.current + delta));
+        };
+        const onMouseUp = () => {
+          dragging.current = false;
+          document.removeEventListener('mousemove', onMouseMove);
+          document.removeEventListener('mouseup', onMouseUp);
+        };
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      }, [height]);
+
+      return [height, onMouseDown];
+    }
+
+    // ─── Pipeline Panel (DAG/SQL toggle + column selector + resize) ───────────
+
+    function PipelinePanel({ title, dag, sql, columnSqls, onNodeClick, initialHeight, nodeSchemas, globalModeSignal }) {
+      const [mode, setMode] = useState('dag');
+      const [selectedCol, setSelectedCol] = useState('__full__');
+      const [panelHeight, onResizeMouseDown] = useResize(initialHeight || 300);
+
+      useEffect(() => {
+        if (globalModeSignal) setMode(globalModeSignal.mode);
+      }, [globalModeSignal]);
+
+      // Determine which DAG/SQL to show
+      let activeDag = dag;
+      let activeSql = sql;
+      if (selectedCol !== '__full__' && columnSqls && columnSqls[selectedCol]) {
+        activeDag = columnSqls[selectedCol].dag;
+        activeSql = columnSqls[selectedCol].sql;
+      }
+
+      const colNames = columnSqls ? Object.keys(columnSqls) : [];
+
+      return React.createElement('div', { className: 'pipeline-card' },
+        React.createElement('div', { className: 'pipeline-card-header' },
+          React.createElement('h4', null, title),
+          colNames.length > 0 && React.createElement('div', { className: 'col-selector' },
+            React.createElement('span', {
+              className: `col-pill ${selectedCol === '__full__' ? 'active' : ''}`,
+              onClick: () => setSelectedCol('__full__'),
+            }, 'full'),
+            colNames.map(c => React.createElement('span', {
+              key: c,
+              className: `col-pill ${selectedCol === c ? 'active' : ''}`,
+              onClick: () => setSelectedCol(c),
+            }, c))
+          ),
+          React.createElement('div', { className: 'header-controls' },
+            React.createElement('div', { className: 'toggle-group' },
+              React.createElement('button', { className: `toggle-btn ${mode === 'dag' ? 'active' : ''}`, onClick: () => setMode('dag') }, 'DAG'),
+              React.createElement('button', { className: `toggle-btn ${mode === 'sql' ? 'active' : ''}`, onClick: () => setMode('sql') }, 'SQL')
+            )
+          )
+        ),
+        React.createElement('div', { className: 'pipeline-card-body', style: { height: panelHeight } },
+          mode === 'dag'
+            ? React.createElement(DAGPanel, { dag: activeDag, onNodeClick, height: panelHeight, nodeSchemas })
+            : React.createElement(SQLCodeBlock, { sql: activeSql, maxHeight: panelHeight })
+        ),
+        React.createElement('div', { className: 'resize-handle', onMouseDown: onResizeMouseDown })
+      );
+    }
+
+    // ─── Main App ─────────────────────────────────────────────────────────────
+
+    function App() {
+      const [testCases, setTestCases] = useState([]);
+      const [selectedId, setSelectedId] = useState(null);
+      const [testCase, setTestCase] = useState(null);
+      const [loadingCase, setLoadingCase] = useState(false);
+      const [popupNode, setPopupNode] = useState(null);
+      const [popupResult, setPopupResult] = useState(null);
+      const [popupLoading, setPopupLoading] = useState(false);
+      const [nodeSchemas, setNodeSchemas] = useState({});
+      const [globalModeSignal, setGlobalModeSignal] = useState(null);
+
+      useEffect(() => {
+        fetch('/api/test-cases')
+          .then(r => r.json())
+          .then(data => {
+            setTestCases(data);
+            const hash = window.location.hash.replace('#', '');
+            const match = hash && data.find(tc => tc.id === hash);
+            setSelectedId(match ? hash : data.length > 0 ? data[0].id : null);
+          });
+        const onHashChange = () => {
+          const hash = window.location.hash.replace('#', '');
+          if (hash) setSelectedId(hash);
+        };
+        window.addEventListener('hashchange', onHashChange);
+        return () => window.removeEventListener('hashchange', onHashChange);
+      }, []);
+
+      useEffect(() => {
+        if (!selectedId) return;
+        if (window.location.hash.replace('#', '') !== selectedId) {
+          window.history.replaceState(null, '', `#${selectedId}`);
+        }
+        setLoadingCase(true);
+        setPopupNode(null);
+        setNodeSchemas({});
+        fetch(`/api/test-cases/${selectedId}`)
+          .then(r => r.json())
+          .then(data => {
+            setTestCase(data);
+            setLoadingCase(false);
+            const initialSchemas = {};
+            for (const src of (data.sources || [])) {
+              if (src.preview && src.preview.columns) {
+                initialSchemas[`source_${src.name}`] = src.preview.columns;
+              }
+            }
+            for (const p of (data.pipelines || [])) {
+              for (const ps of (p.past_sources || [])) {
+                if (ps.preview && ps.preview.columns) {
+                  initialSchemas[`source_${ps.name}`] = ps.preview.columns;
+                }
+              }
+            }
+            setNodeSchemas(initialSchemas);
+          })
+          .catch(() => setLoadingCase(false));
+      }, [selectedId]);
+
+      const handleNodeClick = useCallback(async (nodeData, dataContext) => {
+        setPopupNode(nodeData);
+        setPopupResult(null);
+        setPopupLoading(true);
+        try {
+          const resp = await fetch('/api/execute', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              test_case_id: selectedId,
+              sql: nodeData.executableSql,
+              data_context: dataContext,
+            }),
+          });
+          const result = await resp.json();
+          setPopupResult(result);
+          if (result.columns && result.columns.length > 0 && nodeData.nodeId) {
+            setNodeSchemas(prev => ({ ...prev, [nodeData.nodeId]: result.columns }));
+          }
+        } catch (e) {
+          setPopupResult({ columns: [], rows: [], error: e.message });
+        }
+        setPopupLoading(false);
+      }, [selectedId]);
+
+      return React.createElement('div', { className: 'app-layout' },
+        // Sidebar
+        React.createElement('div', { className: 'sidebar' },
+          React.createElement('h2', null, 'Test Cases'),
+          testCases.map(tc =>
+            React.createElement('div', {
+              key: tc.id,
+              className: `sidebar-item ${selectedId === tc.id ? 'active' : ''}`,
+              onClick: () => setSelectedId(tc.id),
+            }, tc.id.replace(/_/g, ' '))
+          )
+        ),
+
+        // Main content
+        React.createElement('div', { className: 'main-content' },
+          loadingCase
+            ? React.createElement('div', { className: 'loading' }, 'Loading test case...')
+            : !testCase
+              ? React.createElement('div', { className: 'empty-state' }, 'Select a test case')
+              : React.createElement(React.Fragment, null,
+                  // Header with global toggle
+                  React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 } },
+                    React.createElement('h1', { style: { marginBottom: 0 } }, testCase.id.replace(/_/g, ' ')),
+                    React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                      React.createElement('span', { style: { fontSize: 12, color: '#656d76' } }, 'All panels:'),
+                      React.createElement('div', { className: 'toggle-group' },
+                        React.createElement('button', {
+                          className: `toggle-btn ${globalModeSignal && globalModeSignal.mode === 'dag' ? 'active' : ''}`,
+                          onClick: () => setGlobalModeSignal({ mode: 'dag', ts: Date.now() }),
+                        }, 'DAG'),
+                        React.createElement('button', {
+                          className: `toggle-btn ${globalModeSignal && globalModeSignal.mode === 'sql' ? 'active' : ''}`,
+                          onClick: () => setGlobalModeSignal({ mode: 'sql', ts: Date.now() }),
+                        }, 'SQL')
+                      )
+                    )
+                  ),
+                  React.createElement('p', { className: 'description' }, testCase.description),
+
+                  // Source Data & Target Schema
+                  React.createElement('div', { className: 'section' },
+                    React.createElement('div', { className: 'section-header' },
+                      React.createElement('h3', null, 'Source Data & Target Schema')
+                    ),
+                    React.createElement('div', { className: 'section-body' },
+                      React.createElement('div', { className: 'tables-row' },
+                        testCase.sources.map(src =>
+                          React.createElement('div', { key: src.name, className: 'table-card' },
+                            React.createElement('h4', null, `Source: ${src.name}`),
+                            src.preview && React.createElement(DataTable, { columns: src.preview.columns, rows: src.preview.rows })
+                          )
+                        ),
+                        React.createElement('div', { className: 'table-card' },
+                          React.createElement('h4', null, `Target: ${testCase.target.table || ''}`),
+                          testCase.target.columns && React.createElement('table', { className: 'data-table schema-table' },
+                            React.createElement('thead', null,
+                              React.createElement('tr', null,
+                                React.createElement('th', null, 'Column'),
+                                React.createElement('th', null, 'Type'),
+                                React.createElement('th', null, 'Description')
+                              )
+                            ),
+                            React.createElement('tbody', null,
+                              testCase.target.columns.map((col, i) =>
+                                React.createElement('tr', { key: i },
+                                  React.createElement('td', { style: { color: '#0969da', fontWeight: 600 } }, col.name),
+                                  React.createElement('td', null, col.type),
+                                  React.createElement('td', { style: { color: '#656d76' } }, col.description || '')
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  ),
+
+                  // Past Pipelines (with column selector per pipeline)
+                  testCase.pipelines.length > 0 && React.createElement('div', { className: 'section' },
+                    React.createElement('div', { className: 'section-header' },
+                      React.createElement('h3', null, 'Past Pipelines')
+                    ),
+                    React.createElement('div', { className: 'section-body' },
+                      React.createElement('div', { className: 'pipelines-grid' },
+                        testCase.pipelines.map(p =>
+                          React.createElement(PipelinePanel, {
+                            key: p.name,
+                            title: p.name,
+                            dag: p.full_dag,
+                            sql: p.full_sql,
+                            columnSqls: p.column_sqls,
+                            onNodeClick: (nodeData) => handleNodeClick(nodeData, `past:${p.name}`),
+                            initialHeight: 300,
+                            nodeSchemas: nodeSchemas,
+                            globalModeSignal: globalModeSignal,
+                          })
+                        )
+                      )
+                    )
+                  ),
+
+                  // Expected Output
+                  testCase.expected_sql && React.createElement('div', { className: 'section' },
+                    React.createElement('div', { className: 'section-header' },
+                      React.createElement('h3', null, 'Expected Output')
+                    ),
+                    React.createElement('div', { className: 'section-body' },
+                      React.createElement(PipelinePanel, {
+                        title: 'Expected SQL',
+                        dag: testCase.expected_dag,
+                        sql: testCase.expected_sql,
+                        columnSqls: testCase.expected_column_sqls,
+                        onNodeClick: (nodeData) => handleNodeClick(nodeData, 'source'),
+                        initialHeight: 480,
+                        nodeSchemas: nodeSchemas,
+                        globalModeSignal: globalModeSignal,
+                      })
+                    )
+                  ),
+
+                  // Node data popup
+                  popupNode && React.createElement(NodeDataPopup, {
+                    nodeData: popupNode,
+                    result: popupResult,
+                    loading: popupLoading,
+                    onClose: () => setPopupNode(null),
+                  })
+                )
+        )
+      );
+    }
+
+    // ─── Mount ────────────────────────────────────────────────────────────────
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(React.createElement(App));
+  </script>
+</body>
+</html>

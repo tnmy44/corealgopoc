@@ -1,0 +1,48 @@
+description: >
+  Past pipeline that used UNION ALL to combine POS register sales and online
+  order sales into a unified transaction stream. The two sources required
+  different transformations before unioning:
+    - POS: dates in MM/DD/YYYY (parsed via strptime), amounts in cents
+      (divided by 100), customer_email mapped directly.
+    - Online: ISO timestamps (cast to DATE), amount = subtotal + tax,
+      email column renamed to customer_email.
+  After per-source reformats the streams were unioned and a final reformat
+  produced the target schema.
+
+sources:
+  - name: pos_sales
+    schema:
+      - name: receipt_no
+        type: STRING
+      - name: sale_date
+        type: STRING
+      - name: total_cents
+        type: INTEGER
+      - name: customer_email
+        type: STRING
+  - name: online_sales
+    schema:
+      - name: order_id
+        type: STRING
+      - name: order_timestamp
+        type: STRING
+      - name: subtotal
+        type: DECIMAL
+      - name: tax
+        type: DECIMAL
+      - name: email
+        type: STRING
+
+target_columns:
+  txn_id:
+    source_columns: [pos_sales.receipt_no, online_sales.order_id]
+    sql_file: sql/txn_id.sql
+  txn_date:
+    source_columns: [pos_sales.sale_date, online_sales.order_timestamp]
+    sql_file: sql/txn_date.sql
+  amount:
+    source_columns: [pos_sales.total_cents, online_sales.subtotal, online_sales.tax]
+    sql_file: sql/amount.sql
+  customer_email:
+    source_columns: [pos_sales.customer_email, online_sales.email]
+    sql_file: sql/customer_email.sql

@@ -1,0 +1,4 @@
+product_id,product_name,warehouse_id,total_received,total_shipped,current_stock,avg_unit_cost
+P001,Widget A,W01,100,30,70,12.50
+P001,Widget A,W02,50,20,30,12.50
+P002,Gadget B,W01,200,80,120,25.00

@@ -1,0 +1,37 @@
+description: >
+  Aggregation-based pipeline with very different column names and business logic.
+  Uses GROUP BY + SUM to aggregate ledger entries per account. Risk categorization
+  is based on account type rather than risk score. Low column name overlap with
+  current sources. Should not be selected by the algorithm for any target column.
+
+sources:
+  - name: ledger_entries
+    schema:
+      - { name: entry_id, type: VARCHAR }
+      - { name: account_id, type: VARCHAR }
+      - { name: entry_amount, type: INTEGER }
+      - { name: entry_date, type: DATE }
+      - { name: entry_type, type: VARCHAR }
+  - name: accounts
+    schema:
+      - { name: account_id, type: VARCHAR }
+      - { name: account_holder, type: VARCHAR }
+      - { name: account_type, type: VARCHAR }
+      - { name: branch, type: VARCHAR }
+
+target_columns:
+  loan_id:
+    source_columns: [accounts.account_id]
+    sql_file: sql/loan_id.sql
+  borrower_name:
+    source_columns: [accounts.account_holder]
+    sql_file: sql/borrower_name.sql
+  loan_amount_usd:
+    source_columns: [ledger_entries.entry_amount]
+    sql_file: sql/loan_amount_usd.sql
+  risk_category:
+    source_columns: [accounts.account_type]
+    sql_file: sql/risk_category.sql
+  region:
+    source_columns: [accounts.branch]
+    sql_file: sql/region.sql

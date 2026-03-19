@@ -1,0 +1,4 @@
+drug_id,drug_name,molecule_type,therapeutic_area
+DRG01,Paxlovid,Small Molecule,Infectious Disease
+DRG02,Elrexfio,Bispecific Antibody,Oncology
+DRG03,Abrysvo,Vaccine,Infectious Disease

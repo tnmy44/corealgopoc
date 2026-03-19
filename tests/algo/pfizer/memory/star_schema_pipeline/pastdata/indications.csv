@@ -1,0 +1,4 @@
+indication_id,indication_name,icd_code,disease_category
+IND01,COVID-19,U07.1,Respiratory Infection
+IND02,Multiple Myeloma,C90.0,Hematologic Malignancy
+IND03,RSV Prevention,J12.1,Respiratory Infection
